@@ -21,7 +21,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:15px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overscroll-behavior:none}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;text-align:inherit}
-input,textarea,select{font:inherit;color:inherit}
+input,textarea,select{font:inherit;color:inherit;font-size:16px}
 a{color:var(--tint)}
 kbd{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;padding:2px 5px;border-radius:4px;background:var(--fill);border:.5px solid var(--sep);vertical-align:1px}
 #app{position:fixed;inset:0;display:flex;flex-direction:column;max-width:760px;margin:0 auto;background:var(--bg);overflow:hidden}
@@ -158,6 +158,13 @@ kbd{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;padding:2px 5px;
 .pills{display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px}
 .pill{padding:7px 12px;border-radius:16px;background:var(--fill);font-size:14px;font-weight:500}
 .pill.tint{background:var(--tint);color:#fff}
+.task .lbl{flex:1;min-width:0}
+.tdel{flex:none;width:30px;height:30px;margin:-4px -8px -4px 0;border-radius:15px;color:var(--ink2);font-size:21px;line-height:1;display:grid;place-items:center}
+.lbl small.late{color:var(--tint)}
+.tadd{display:flex;gap:6px;padding:9px 12px;border-top:.5px solid var(--sep);align-items:center}
+.tadd input{flex:1;min-width:0;border:0;background:var(--fill);border-radius:8px;padding:7px 10px}
+.tadd input[type=date]{flex:0 1 132px}
+.tadd button{flex:none;color:var(--tint);font-weight:600;padding:6px 2px}
 a.pill{color:var(--ink);text-decoration:none}
 .dt-top{display:flex;gap:12px;align-items:flex-start;padding:2px 4px 6px}
 .dt-top .bigck{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--c);margin-top:3px;position:relative;background:var(--bg)}
@@ -330,13 +337,16 @@ const atDate = s => { const [d, t] = s.split('T'); const x = parseYMD(d); const 
 // iOS 캘린더 색
 const CATS = {
   eng: { name: '영어', c: '#FF9500', on: '#fff' },
+  demo: { name: '수업 시연', c: '#5856D6', on: '#fff' },
   asg: { name: '과제·준비', c: '#1BADF8', on: '#fff' },
+  buf: { name: '버퍼 · 꼭 할 일', c: '#FF2D55', on: '#fff' },
   uni: { name: '대학 수업', c: '#CC73E1', on: '#fff' },
   mer: { name: 'Merrin', c: '#63DA38', on: '#fff' },
+  dev: { name: '묵상', c: '#00C7BE', on: '#fff' },
   fam: { name: '가족', c: '#FFCC00', on: '#3A2F00' },
   move: { name: '이동', c: '#A2845E', on: '#fff' },
   rest: { name: '휴식·수면', c: '#8E8E93', on: '#fff' },
-  due: { name: '마감·휴일', c: '#FF2968', on: '#fff' },
+  due: { name: '마감·휴일', c: '#FF3B30', on: '#fff' },
 };
 // TEPI615-26X(C): 2026-11-09 ~ 2027-01-17, Workshop A 월 10–12 (11/16 온라인), Workshop B 목 10–12, 11/9–12/20
 const FIX = { planStart: '2026-11-05', course1: '2026-11-09', monLast: '2026-12-14', thuFirst: '2026-11-12', thuLast: '2026-12-17', online: { '2026-11-16': 1 }, schoolLast: '2026-12-15', planEnd: '2027-01-31' };
@@ -349,16 +359,15 @@ const LIGHT = new Set(['2026-11-13', '2026-12-24', '2026-12-25', '2026-12-26', '
 const LIGHT_NAME = { '2026-12-24': '크리스마스 이브', '2026-12-27': '연휴', '2026-12-31': '새해 전날', '2027-01-03': '연휴' };
 const DEADLINES = [
   { id: 'iss', t: 'Educational issues essay', short: 'Issues essay (40%)', w: '40%', at: '2026-12-14T23:59', note: '1,500단어 ±10% · 참고문헌 5편 이상 · 150단어 초록 Learn 게시 · 마감 전 수업 발표', c: 'due' },
-  { id: 'lr1', t: '문헌 리뷰 + 핸드아웃 · 조기 제출', short: '조기 제출 · 문헌 리뷰 + 핸드아웃', w: '50% + 10%', at: '2027-01-11T09:00', note: '이 날을 목표로 잡으면 1/11부터 영어·부임 준비에 전념', c: 'due' },
+  { id: 'lr1', t: '문헌 리뷰 + 핸드아웃 · 조기 제출', short: '조기 제출 · 문헌 리뷰 + 핸드아웃', w: '50% + 10%', at: '2027-01-11T09:00', note: '선택 — 영어 우선이라 기본 목표는 1/15(금) 제출, 최종 1/17(일)', c: 'due' },
   { id: 'lr2', t: '문헌 리뷰 + 핸드아웃 · 최종 마감', short: '최종 · 문헌 리뷰 50% + 핸드아웃 10%', w: '50% + 10%', at: '2027-01-17T23:59', note: '3,000단어 ±10% · 참고문헌 8–12편 · 핸드아웃 1–2쪽 · 동료 토론 진행', c: 'due' },
 ];
 const MILE = [
   { d: '2026-11-09', t: 'TEPI615 수업 시작 · 월·목 10–12', cat: 'uni' },
   { d: '2026-11-16', t: '오늘 수업은 온라인', cat: 'uni' },
-  { d: '2026-11-22', t: '목표 · Issues 초안 1,500단어', cat: 'asg' },
+  { d: '2026-11-26', t: '목표 · Issues 초안 1,500단어', cat: 'asg' },
   { d: '2026-12-10', t: '목표 · Issues 제출 (마감 12/14)', cat: 'asg' },
   { d: '2026-12-17', t: 'TEPI615 마지막 수업', cat: 'uni' },
-  { d: '2027-01-10', t: '목표 · 문헌 리뷰 + 핸드아웃 완성', cat: 'asg' },
 ];
 // Merrin School 공개 달력·학기 안내 (merrin.school.nz, 2026-11-05 확인)
 const SCHOOL = [
@@ -380,17 +389,16 @@ const REQ = {
   L: '문헌 리뷰: 3,000단어 ±10% · 질문 → 비판적 종합 → 한계·전제 → 답 → 실천 시사점 · 참고문헌 8–12편 (대부분 최근 20년 원저 논문) · 핸드아웃 1–2쪽 · 동료 토론 진행 · 1/11 9:00 조기 / 1/17 23:59 최종',
 };
 const ASG_PLAN = [
-  { from: '2026-11-05', to: '2026-11-08', a: 'IL', t: '두 과제 주제 정하기', steps: ['두 과제를 인접한 주제로 (예: EAL·다언어 학습자 지원 / structured literacy)', 'Issues: 공적 논쟁이 되는 질문 후보 3개 (Should …? / What are the consequences of …?)', '문헌 리뷰: 초임 교사로서 궁금한 질문 후보 3개', 'UC 도서관 검색어 정리 (ERIC · A+ Education · NZCER)'] },
-  { from: '2026-11-09', to: '2026-11-15', a: 'I', t: 'Issues 자료 읽기', steps: ['질문 확정 (수업에서 한 번 확인)', '관점 2개 이상 — 자료 6–8편 읽고 메모', '자료마다 출처 유형 표시: 연구 · 전문가 의견 · 정책 · 언론 · 학부모', '문헌 리뷰용 논문은 목록만 따로'] },
-  { from: '2026-11-16', to: '2026-11-22', a: 'I', t: 'Issues 초안', steps: ['개요: 질문 → 관점 A → 관점 B → 내 입장 → 결론', '하루 300단어 × 5일 = 1,500단어', '150단어 초록 → Learn에 게시', 'AI 사용 메모 이어 쓰기 (진술문용)'] },
-  { from: '2026-11-23', to: '2026-11-29', a: 'IL', t: 'Issues 수정 · 발표 준비', steps: ['초안 다시 읽고 논증 보강 — 두 관점이 정말 다른 관점인지', '발표: 원고 대신 키워드 3개 + 입트기 4·3·2로 연습', '문헌 리뷰: 논문 4–6편 읽기 → 종합표(matrix) 시작'] },
-  { from: '2026-11-30', to: '2026-12-06', a: 'IL', t: 'Issues 발표 · 문헌 리뷰 자료', steps: ['수업 발표 → 동료 피드백 메모', 'APA 7 점검 · AI 사용 진술', '문헌 리뷰: 8–12편 확보 (대부분 최근 20년 원저 논문)', '종합표 완성: 주제별로 묶기'] },
-  { from: '2026-12-07', to: '2026-12-14', a: 'IL', t: 'Issues 제출 · 문헌 리뷰 개요', steps: ['Issues 최종 점검 → 12/10까지 제출 (마감 12/14 23:59)', '문헌 리뷰 개요: 서론(이유·질문) → 주제별 종합 → 한계·전제 → 답 → 실천 시사점'] },
-  { from: '2026-12-15', to: '2026-12-20', a: 'L', t: '문헌 리뷰 서론 + 종합 ①', steps: ['서론: 주제를 고른 이유와 질문', '종합 ①: 첫 번째 주제 묶음 — 연구끼리 비교'] },
-  { from: '2026-12-21', to: '2026-12-27', a: 'L', t: '문헌 리뷰 종합 ②', steps: ['종합 ②: 비교·대조 — 요약 나열 금지', '연구의 한계·전제를 본문에 녹이기', '성탄 주는 가볍게'] },
-  { from: '2026-12-28', to: '2027-01-03', a: 'L', t: '문헌 리뷰 종합 ③ · 질문에 답', steps: ['처음 질문에 분명히 답하기', '2,000단어 넘었는지 확인', '연말연시는 가볍게'] },
-  { from: '2027-01-04', to: '2027-01-10', a: 'L', t: '문헌 리뷰 시사점 · 수정 · 핸드아웃', steps: ['실천 시사점 / 나의 배움 섹션', '전체 수정 → 3,000단어 ±10%', '핸드아웃 1–2쪽 (동료 토론 질문 포함)', 'APA 7 · AI 사용 진술'] },
-  { from: '2027-01-11', to: '2027-01-17', a: 'L', t: '제출', steps: ['1/11(월) 9:00 조기 제출', '못 했으면 1/17(일) 23:59 최종 마감'] },
+  { from: '2026-11-12', to: '2026-11-15', a: 'IL', t: '두 과제 주제 정하기', steps: ['두 과제를 인접한 주제로 (예: EAL·다언어 학습자 지원 / structured literacy)', 'Issues: 공적 논쟁이 되는 질문 후보 3개 (Should …? / What are the consequences of …?)', '문헌 리뷰: 초임 교사로서 궁금한 질문 후보 3개', 'UC 도서관 검색어 정리 (ERIC · A+ Education · NZCER)'] },
+  { from: '2026-11-16', to: '2026-11-22', a: 'I', t: 'Issues 자료 읽기', steps: ['질문 확정 (수업에서 한 번 확인)', '관점 2개 이상 — 자료 6–8편 읽고 메모', '자료마다 출처 유형 표시: 연구 · 전문가 의견 · 정책 · 언론 · 학부모', '문헌 리뷰용 논문은 목록만 따로'] },
+  { from: '2026-11-23', to: '2026-11-29', a: 'I', t: 'Issues 초안', steps: ['개요: 질문 → 관점 A → 관점 B → 내 입장 → 결론', '과제 칸마다 300–400단어 → 목요일까지 1,500단어', '150단어 초록 → Learn에 게시', 'AI 사용 메모 이어 쓰기 (진술문용)'] },
+  { from: '2026-11-30', to: '2026-12-06', a: 'IL', t: 'Issues 수정 · 발표 준비', steps: ['논증 보강 — 두 관점이 정말 다른 관점인지', '발표: 원고 대신 키워드 3개 + 입트기 4·3·2로 연습', 'APA 7 점검 · AI 사용 진술', '문헌 리뷰 질문 확정 + 검색어'] },
+  { from: '2026-12-07', to: '2026-12-14', a: 'IL', t: 'Issues 발표 · 제출', steps: ['수업 발표 → 동료 피드백 반영', 'Issues 12/10까지 제출 (마감 12/14 23:59)', '문헌 리뷰: 논문 목록 8–12편 (대부분 최근 20년 원저 논문)'] },
+  { from: '2026-12-15', to: '2026-12-20', a: 'L', t: '문헌 리뷰 읽기 ①', steps: ['논문 4–6편 읽기 → 종합표(matrix): 질문 · 방법 · 결과 · 한계', '내 질문에 답이 되는 문장에 표시'] },
+  { from: '2026-12-21', to: '2026-12-27', a: 'L', t: '문헌 리뷰 읽기 ② · 종합표', steps: ['나머지 논문 읽기 → 종합표 완성', '주제별로 3–4묶음', '성탄 주는 가볍게'] },
+  { from: '2026-12-28', to: '2027-01-03', a: 'L', t: '문헌 리뷰 개요 · 서론', steps: ['개요: 서론(이유 · 질문) → 묶음별 종합 → 한계 · 전제 → 답 → 실천 시사점', '서론 쓰기', '도서관 연말 휴관 예상 — 집에서, 가볍게'] },
+  { from: '2027-01-04', to: '2027-01-10', a: 'L', t: '문헌 리뷰 본문 초안', steps: ['묶음별 종합 — 요약 나열 말고 비교 · 대조', '한계 · 전제를 본문에 녹이기', '처음 질문에 분명히 답하기'] },
+  { from: '2027-01-11', to: '2027-01-17', a: 'L', t: '문헌 리뷰 마무리 · 제출', steps: ['실천 시사점 · 결론 → 3,000단어 ±10%', '핸드아웃 1–2쪽 (동료 토론 질문 포함)', 'APA 7 · AI 사용 진술 → 1/15(금) 제출 목표 · 최종 1/17(일) 23:59'] },
 ];
 const LEVELS = [
   { from: 0, to: 0, name: '준비 주', ladder: '0.8 → 1.0', t432: '75 → 60 → 45초', first: '자막 없이 1회', ratio: '기초 측정', mat: 'Educators', focus: '기초 측정 · 과제 주제 · 루틴 한 번씩 돌려 보기' },
@@ -449,6 +457,33 @@ const TOPICS = {
     'Redo the prompt you rated lowest this week. Same content — shorter and clearer.',
     'Replay this week’s hardest Merrin moment as a role-play, and say it the way you wish you had.'] },
 };
+// 수업 시연 (Y5–6 기준, Y3–4 변형)
+const DEMO_TOPICS = [
+  { t: 'Persuasive writing — a strong opening', w: 'We are learning to write a strong opening statement for an argument.', y34: 'Y3–4: “I think … because …” 한 문장 쓰기' },
+  { t: 'Maths — adding in our heads', w: 'We are learning to split numbers into tens and ones to add in our heads, like 47 + 38.', y34: 'Y3–4: 두 자리 + 한 자리 (36 + 7)' },
+  { t: 'Reading — making inferences', w: 'We are learning to use clues in the text to work out how a character feels.', y34: 'Y3–4: 그림 단서로 기분 맞히기' },
+  { t: 'Maths — fractions on a number line', w: 'We are learning to place fractions on a number line.', y34: 'Y3–4: 종이 접어 반 · 4분의 1' },
+  { t: 'Science — the water cycle', w: 'We are learning to explain how water changes from one state to another.', y34: 'Y3–4: 얼음이 녹는 걸 관찰하고 말하기' },
+  { t: 'Writing — show, don’t tell', w: 'We are learning to show a character’s feelings through actions and dialogue.', y34: 'Y3–4: 기분 낱말 늘리기' },
+  { t: 'Statistics — class survey', w: 'We are learning to collect data and show it in a bar graph.', y34: 'Y3–4: 그림 그래프' },
+  { t: 'PE / Health — teamwork game', w: 'We are learning to give positive feedback to our teammates.', y34: 'Y3–4: 차례 지키기 놀이' },
+  { t: 'Te reo Māori — greetings', w: 'We are learning to greet each other and introduce ourselves in te reo Māori.', y34: 'Y3–4: Kia ora · Ko ___ tōku ingoa' },
+  { t: 'Digital tech — algorithms', w: 'We are learning to write clear, step-by-step instructions.', y34: 'Y3–4: 친구 로봇 움직이기' },
+  { t: 'Read-aloud with think-aloud', w: 'We are learning to predict what will happen next and explain why.', y34: 'Y3–4: 그림책 예측하기' },
+  { t: 'Day 1 — our class agreements', w: 'We are learning to agree on how we will treat each other this year.', y34: 'Y3–4: 교실 약속을 그림으로' },
+];
+const DEMO_RUBRIC = ['지시는 한 번에 하나, 3단계 이하', '지시 뒤 이해 확인 (thumbs · “Tell your buddy what you’ll do first”)', '학생이 말하는 시간 만들기 (turn and talk)', '핵심어에 강세 · 문장 끝을 흐리지 않기', '전환 말이 자연스러운가 (“Right, next up …”)', '예상 못 한 질문에 3초 안에 반응 (“Good question — …”)', '칭찬 · 피드백이 구체적인가 (“Ka pai — I like how you …”)', '타이머 안에 끝내기'];
+const DEMO_FRAMES = [
+  { h: '도입 (훅 · WALT · 성공 기준)', items: [['Have a look at this. What do you notice?', '훅 질문'], ['Today we’re learning to …', 'WALT'], ['You’ll know you’ve got it when you can …', '성공 기준']] },
+  { h: 'I do (모델링)', items: [['Watch me first. I’m thinking …', '생각 소리 내기'], ['Notice how I …', '짚어 주기']] },
+  { h: 'We do (함께)', items: [['Let’s try one together. What should I do first?', '함께 하기'], ['Turn to your buddy — what comes next?', '짝 확인']] },
+  { h: 'You do (혼자 · 짝)', items: [['Your turn. You’ve got five minutes.', '시간 주기'], ['If you’re stuck, ask three before me.', '도움 순서']] },
+  { h: '마무리', items: [['Look back at our success criteria — thumbs up if you …', '돌아보기'], ['Tell your buddy one thing you learnt today.', '한 줄 정리']] },
+];
+const SEED_TASKS = [
+  { id: 'tk1', t: '교사 등록 준비 — 줌 안내 · 이메일대로 서류 챙기기', due: '', done: 0 },
+  { id: 'tk2', t: '한국 학교에 경력증명서 요청 (영문 · 직인) — 한국 근무시간은 NZ 오후 1시부터', due: '', done: 0 },
+];
 const PHRASES = [
   { h: '되묻기 · 확인 (동료)', k: 'ask', items: [
     ['Sorry, what’s ___?', '모르는 말 하나만 콕 집어 묻기'], ['Do you mean ___?', '내가 이해한 걸로 확인'], ['Is that the same as ___?', '아는 개념에 연결'],
@@ -555,16 +590,17 @@ const TDATES = ['2026-12-06', '2027-01-03', '2027-01-24'];
 const INBOX = [
   { h: '이번 주 먼저', badge: 1, items: [
     ['w1', '기초 측정 — Educators 처음 보는 회차 무자막 → 이해율 · 받아쓰기 정확도 · 입트기 wpm (오늘 · 내일)'],
-    ['w2', '두 과제 주제를 인접하게 정하기 (예: EAL·다언어 학습자 지원 / structured literacy)'],
+    ['w8', '일요일 아침 도서관 여는 시각 확인 — UC 도서관은 작년 여름(11/10~2/15) 주말 1–5pm, 시립 Tūranga는 10am'],
+    ['w5', '도서관 그룹 스터디룸 예약 방법 확인 (말하기 · 수업 시연용)'],
+    ['w9', '수업 시연 녹화 준비 — 휴대폰 거치대 · 소리 내도 되는 자리'],
     ['w3', 'Learn에서 Issues 발표 날짜와 문헌 리뷰 토론 날짜 확인'],
     ['w4', 'Merrin 첫 봉사일 확인 — 11/13(금)은 Show Day 휴교라 11/18(수)이나 11/20(금)일 가능성 → 캘린더 › 설정에 반영'],
-    ['w5', '도서관 그룹 스터디룸 예약 방법 확인 (소리 내는 연습용)'],
     ['w6', 'Merrin 수첩(또는 폰 메모) 준비'],
     ['w7', '이 페이지를 아이폰 홈 화면에 추가 (Safari 공유 → 홈 화면에 추가)']] },
   { h: '확인할 것', badge: 1, items: [
     ['c1', '첫 출근일 — 학교 달력: 1/26 사무실 오픈 · 1/28–29 학부모 면담 · 2/1 개학 (캘린더 › 설정 › 부임일)'],
     ['c2', '담당 학년 — Y5–6 가능성이 큼, 아니면 Y3–4'],
-    ['c3', '방학 중 오전(9:00–12:30) 아이 돌봄 — 문헌 리뷰·영어 블록의 전제'],
+    ['c3', '방학(12/16~) 중 평일 9:10–4:40 공부 시간 — 아이 돌봄 계획'],
     ['c4', '12/17(목) 마지막 수업 날 아이 돌봄 (방학 시작 뒤)'],
     ['c5', 'Y5/6 캠프 기간(12/2–4)에 봉사할 반']] },
   { h: 'Merrin에서 12/15 전에 확보할 것', badge: 0, items: [
@@ -581,8 +617,9 @@ const SPEAK_URL = 'https://bluemuple.github.io/subtutor/#/speak';
 
 /* ═════════ 3. 상태 (이 기기 브라우저에만 저장) ═════════ */
 const LS_KEY = 'tb.state.v1';
-const DEF_SET = { merrinStart: '2026-11-13', merrinEnd: '2026-12-15', kidsHoliday: '2026-12-16', litTarget: '2027-01-11', dday: '2027-01-28', lang: 'en', h24: false, theme: 'auto', hourH: 60, hidden: {} };
-function freshState() { return { v: 1, set: JSON.parse(JSON.stringify(DEF_SET)), done: {}, steps: {}, inst: {}, series: {}, extra: {}, custom: [], inbox: {}, metrics: [], seenHelp: false }; }
+const DEF_SET = { merrinStart: '2026-11-13', merrinEnd: '2026-12-15', kidsHoliday: '2026-12-16', asgStart: '2026-11-12', litTarget: '2027-01-15', dday: '2027-01-28', lang: 'en', h24: false, theme: 'auto', hourH: 60, hidden: {} };
+const STATE_V = 2;
+function freshState() { return { v: STATE_V, set: JSON.parse(JSON.stringify(DEF_SET)), done: {}, steps: {}, inst: {}, series: {}, extra: {}, custom: [], inbox: {}, metrics: [], tasks: JSON.parse(JSON.stringify(SEED_TASKS)), seenHelp: false }; }
 function normalize(s) {
   const f = freshState();
   if (!s || typeof s !== 'object' || Array.isArray(s)) return f;
@@ -590,7 +627,14 @@ function normalize(s) {
   o.set = Object.assign({}, DEF_SET, s.set || {});
   o.set.hidden = Object.assign({}, (s.set && s.set.hidden) || {});
   for (const k of ['done', 'steps', 'inst', 'series', 'extra', 'inbox']) if (!o[k] || typeof o[k] !== 'object' || Array.isArray(o[k])) o[k] = {};
-  for (const k of ['custom', 'metrics']) if (!Array.isArray(o[k])) o[k] = [];
+  for (const k of ['custom', 'metrics', 'tasks']) if (!Array.isArray(o[k])) o[k] = [];
+  if (!(o.v >= STATE_V)) {
+    // 1 → 2: 하루 틀이 새로 바뀌어(묵상 · 아침 영어 · 버퍼) 옛 시간 편집은 맞지 않으니 비운다. 완료 · 지표 · 내가 만든 블록은 그대로
+    if (o.set.litTarget === '2027-01-11') o.set.litTarget = DEF_SET.litTarget;
+    if (Object.keys(o.inst).length || Object.keys(o.series).length) o.notice = '새 하루 틀로 바뀌어서, 전에 옮긴 블록 시간은 처음 값으로 돌아갔어요';
+    o.inst = {}; o.series = {};
+    o.v = STATE_V;
+  }
   return o;
 }
 function load() { try { return normalize(JSON.parse(localStorage.getItem(LS_KEY) || 'null')); } catch (e) { return freshState(); } }
@@ -641,128 +685,120 @@ function subsFor(ds) {
   return out.sort((a, b) => a[0] - b[0]);
 }
 
+const asgOn = ds => ds >= S.set.asgStart && ds < S.set.litTarget;   // 과제 칸이 있는 날 (그 전엔 전부 영어)
+const libClosed = ds => ds >= '2026-12-24' && ds <= '2027-01-04';      // UC 도서관 연말 휴관 (작년 기준)
+function koreaAt(ds, m) { const d = parseYMD(ds); d.setHours(0, m, 0, 0); try { return d.toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; } }
+const koreaRange = (ds, s, e) => `${koreaAt(ds, s)} – ${koreaAt(ds, e)}`;
 function genDay(ds) {
   const ph = phaseOf(ds);
   if (ph === 'before' || ph === 'after') return [];
   const wd = dow(ds), out = [];
   const T = TOPICS[topicOf(ds)];
   const A = (sid, s, e, title, cat, x) => out.push(Object.assign({ sid, s: toMin(s), e: e === '24:00' ? 1440 : toMin(e), title, cat }, x || {}));
-  const famAm = () => A('fam-am', '05:00', '07:00', '가족 시간', 'fam', { r: 'fam' });
-  const eve = () => A('eng-eve', '20:00', '20:30', `영어 저녁 30 · ${T.name}`, 'eng', { r: 'eve30' });
-  const evening = (sid, from) => { A(sid, from, '19:30', '가족 · 저녁', 'fam', { r: 'fam' }); A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam'); eve(); A('rest-eve', '20:30', '22:00', '정리 · 휴식', 'rest'); };
-  const weekend = wd === 0 || wd === 6;
-  A('sleep-am', '00:00', '05:00', '수면', 'rest');
-
-  if (LIGHT.has(ds) || (ph === 'dday' && weekend)) {
-    A('fam-light', '05:00', '19:30', `가족 · ${HOLI[ds] || LIGHT_NAME[ds] || '주말'}`, 'fam', { r: 'fam' });
+  const termish = ph === 'term' || ph === 'prep', closed = libClosed(ds);
+  const lib = closed ? '집 (UC 도서관 연말 휴관 예상)' : '도서관';
+  const evening = (sid, from) => {
+    A(sid, from, '19:30', '가족 · 저녁', 'fam', { r: 'fam' });
     A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam');
-    A('eng-light', '20:00', '20:30', '가벼운 영어 30', 'eng', { r: 'light30' });
+    A('eng-eve', '20:00', '20:30', `영어 저녁 30 · ${T.name}`, 'eng', { r: 'eve30' });
     A('rest-eve', '20:30', '22:00', '정리 · 휴식', 'rest');
-  } else if (weekend) {
-    const readyish = ph === 'ready' || ph === 'dday';
-    A('fam-wkam', '05:00', '09:00', '가족 아침', 'fam', { r: 'fam' });
-    if (wd === 6) {
-      A('eng-week', '09:00', '10:30', '영어 주간 정리 90', 'eng', { r: 'week90' });
-      A('fam-wk1', '10:30', '13:00', '가족', 'fam', { r: 'fam' });
-      A('asg-sat', '13:00', '14:30', readyish ? '부임 준비' : '과제 예비 (밀린 주만)', 'asg', { r: readyish ? 'ready' : 'asgOpt', opt: true });
-      A('fam-wk2', '14:30', '19:30', '가족 · 저녁', 'fam', { r: 'fam' });
-      A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam');
-      A('rest-wk', '20:00', '22:00', '휴식', 'rest');
-    } else {
-      A('asg-sun', '09:00', '10:30', readyish ? '부임 준비' : '과제 예비', 'asg', { r: readyish ? 'ready' : 'asgOpt', opt: true });
-      A('fam-sun', '10:30', '19:30', '가족 · 쉼', 'fam', { r: 'fam' });
-      A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam');
-      A('eng-metric', '20:00', '20:20', '주간 측정 20', 'eng', { r: 'metric20' });
-      A('rest-sun', '20:20', '22:00', '휴식 · 다음 주 보기', 'rest');
-    }
+  };
+  const merMorning = (warmTitle, warmR) => {
+    A('m-eng60', '05:30', '06:30', '영어 60 · 표준 루틴', 'eng', { r: 'eng60', loc: '집' });
+    A('m-rehearse', '06:30', '07:10', warmTitle, 'eng', { r: warmR, loc: '집 · 소리 내어' });
+    A('m-prep', '07:10', '07:35', '아침 준비', 'fam');
+    A('m-go', '07:35', '08:00', '출근 · Pocket 듣기', 'move', { r: 'move' });
+  };
+  const merEvening = recTitle => {
+    A('m-home', '16:00', '16:20', '귀가', 'move', { r: 'move' });
+    A('m-rec', '16:20', '16:45', recTitle, 'eng', { r: 'merrec' });
+    A('m-buf', '17:00', '17:30', '버퍼 · 꼭 할 일', 'buf', { r: 'buf' });
+    evening('fam-pm-m', '17:30');
+  };
+  A('sleep-am', '00:00', '05:00', '수면', 'rest');
+  A('dev', '05:00', '05:30', '매일성경 묵상', 'dev', { r: 'dev' });
+
+  if (LIGHT.has(ds)) {
+    A('light-eng', '05:30', '07:00', '영어 90 · 휴일 아침', 'eng', { r: 'light', loc: '집' });
+    A('fam-light', '07:00', '19:30', `가족 · ${HOLI[ds] || LIGHT_NAME[ds] || '휴일'}`, 'fam', { r: 'fam' });
+    A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam');
+    A('rest-light', '20:00', '22:00', '휴식', 'rest');
+  } else if (wd === 6) {
+    A('sat-deep', '05:30', '07:00', '영어 90 · 집중 듣기', 'eng', { r: 'deep90', loc: '집' });
+    A('sat-demo', '07:00', '08:30', '수업 시연 90 · 주간 리허설', 'demo', { r: 'demo90', loc: '집 · 녹화' });
+    A('sat-fam', '08:30', '19:00', '가족', 'fam', { r: 'fam' });
+    A('sat-week', '19:00', '20:00', '영어 60 · 주간 정리', 'eng', { r: 'week60' });
+    A('sat-rest', '20:00', '22:00', '휴식', 'rest');
+  } else if (wd === 0) {
+    A('sun-shadow', '05:30', '07:00', '영어 90 · 쉐도잉 · 소리 내어 읽기', 'eng', { r: 'shadow', loc: '집' });
+    A('sun-speak', '07:00', '08:30', '영어 90 · 말하기', 'eng', { r: 'speak', loc: '집' });
+    A('sun-go', '08:30', '09:00', '도서관 이동', 'move', { r: 'move' });
+    A('sun-deep', '09:00', '10:30', '영어 90 · 집중 듣기', 'eng', { r: 'deep90', loc: '도서관 · 여는 시각 확인' });
+    A('sun-read', '10:40', '12:00', '영어 80 · 읽기 · 표현 · 어휘', 'eng', { r: 'read90', loc: '도서관' });
+    A('sun-metric', '12:00', '12:30', '주간 측정 30', 'eng', { r: 'metric20', loc: '도서관' });
+    A('sun-fam', '12:30', '20:00', '가족', 'fam', { r: 'fam' });
+    A('sun-rest', '20:00', '22:00', '휴식 · 다음 주 보기', 'rest');
   } else if (ph === 'dday') {
-    famAm();
-    A('prep-mer', '07:00', '07:30', '아침 준비', 'fam');
-    A('mer-warm', '07:30', '08:00', '출근 · 차 안 워밍업', 'eng', { r: 'ddwarm' });
+    merMorning('영어 40 · 면담 첫인사 리허설', 'ddwarm');
     A('dd-school', '08:00', '16:00', ds === S.set.dday ? 'Merrin · 부임 첫날' : 'Merrin · 출근', 'mer', { r: 'dday', loc: 'Merrin School (시간 확인)' });
-    A('mer-home', '16:00', '16:20', '귀가', 'move', { r: 'move' });
-    A('mer-rec', '16:20', '16:45', '하루 회수 25', 'eng', { r: 'merrec' });
-    A('fam-pm-m', '16:45', '19:30', '가족 · 저녁', 'fam', { r: 'fam' });
-    A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam'); eve(); A('rest-eve', '20:30', '22:00', '정리 · 휴식', 'rest');
+    merEvening('하루 회수 25');
   } else if (isMerrinDay(ds)) {
-    famAm();
-    A('prep-mer', '07:00', '07:30', '아침 준비', 'fam');
-    A('mer-warm', '07:30', '08:00', '출근 · 차 안 워밍업', 'eng', { r: 'merwarm' });
+    merMorning('영어 40 · 오늘 쓸 문장 리허설', 'merwarm');
     if (ds === FIX.schoolLast) {
       A('mer-last', '08:00', '14:15', 'Merrin 마지막 날 · 2시 하교', 'mer', { r: 'merrin', loc: 'Merrin School', sub: subsFor(ds) });
-      A('mer-home2', '14:15', '14:40', '귀가', 'move', { r: 'move' });
-      A('mer-rec2', '14:40', '15:05', '봉사 회수 · 고마움 전하기', 'eng', { r: 'merrec' });
-      evening('fam-pm', '15:05');
+      A('m-home2', '14:15', '14:40', '귀가', 'move', { r: 'move' });
+      A('m-rec2', '14:40', '15:05', '봉사 회수 · 고마움 전하기', 'eng', { r: 'merrec' });
+      A('m-buf2', '15:10', '16:10', '버퍼 · 꼭 할 일', 'buf', { r: 'buf' });
+      A('m-demo2', '16:10', '17:10', '수업 시연 60', 'demo', { r: 'demo', loc: '집' });
+      evening('fam-pm', '17:10');
     } else {
       const tag = ds === firstMerrin() ? ' · 첫날' : ds === S.set.merrinEnd ? ' · 마지막' : '';
       A('mer', '08:00', '16:00', `Merrin 봉사${tag}`, 'mer', { r: 'merrin', loc: 'Merrin School', sub: subsFor(ds) });
-      A('mer-home', '16:00', '16:20', '귀가', 'move', { r: 'move' });
-      A('mer-rec', '16:20', '16:45', '봉사 회수 25', 'eng', { r: 'merrec' });
-      evening('fam-pm-m', '16:45');
+      merEvening('봉사 회수 25');
     }
-  } else if ((ph === 'term' || ph === 'prep') && ds === '2026-11-05') {
-    // 오늘: iPhone 캘린더의 줌 일정 + 기초 측정
-    famAm();
-    A('prep-am', '07:00', '08:30', '아침 · 등교 준비', 'fam');
-    A('run', '08:30', '09:10', '등교 → 도서관', 'move', { r: 'move' });
-    A('n5-eng', '09:10', '10:00', '영어 50 · SubTutor 루틴 맛보기', 'eng', { r: 'pre45', loc: '도서관 (이어폰)' });
-    A('n5-zoom', '10:00', '11:00', '교사 등록 줌 (주소는 이메일에)', 'asg', { r: 'zoom' });
-    A('n5-asg1', '11:00', '12:00', '과제 · 두 과제 주제 정하기', 'asg', { r: 'asg', loc: 'UC 도서관' });
-    A('n5-lunch', '12:00', '12:30', '점심', 'rest');
-    A('n5-asg2', '12:30', '13:30', '과제 · 자료 검색 시작', 'asg', { r: 'asg', loc: 'UC 도서관' });
-    A('n5-base', '13:30', '14:30', '영어 기초 측정 (baseline)', 'eng', { r: 'base' });
-    A('pickup', '14:35', '15:05', '하교 픽업', 'move', { r: 'move' });
-    evening('fam-pm', '15:05');
-  } else if (ph === 'term' || ph === 'prep') {
-    famAm();
-    A('prep-am', '07:00', '08:30', '아침 · 등교 준비', 'fam');
-    A('run', '08:30', '09:10', '등교 → 도서관', 'move', { r: 'move' });
-    if (hasClass(ds)) {
+  } else {
+    // 평일 도서관 날 — 아침 5:30–8:00 집 영어, 9:10–4:40 도서관, 하교 픽업 없음
+    A('am-eng60', '05:30', '06:30', '영어 60 · 표준 루틴', 'eng', { r: 'eng60', loc: '집' });
+    A('am-demo', '06:30', '07:15', '수업 시연 45', 'demo', { r: 'demo', loc: '집 · 소리 내어 · 녹화' });
+    A('am-shadow', '07:15', '08:00', '영어 45 · 쉐도잉 · 소리 내어 읽기', 'eng', { r: 'shadow', loc: '집' });
+    A('am-prep', '08:00', '08:40', termish ? '아침 · 등교 준비' : '아침 · 아이들', 'fam');
+    A('to-lib', '08:40', '09:10', closed ? '공부 준비 (집)' : termish ? '등교 → 도서관' : '도서관 이동', 'move', { r: 'move' });
+    if (ds === '2026-11-05') {
+      // 오늘: 오전 일정은 이미 지남 — 줌 · 기초 측정은 그대로, 과제 칸은 영어로
+      A('n5-eng', '09:10', '10:00', '영어 50 · SubTutor 루틴 맛보기', 'eng', { r: 'pre45', loc: '도서관 (이어폰)' });
+      A('n5-zoom', '10:00', '11:00', '교사 등록 줌 (주소는 이메일에)', 'asg', { r: 'zoom' });
+      A('lib-read', '11:00', '12:20', '영어 80 · 읽기 · 표현 · 어휘', 'eng', { r: 'read90', loc: lib });
+      A('lunch', '12:20', '13:00', '점심', 'rest');
+      A('n5-buf', '13:00', '13:30', '버퍼 · 꼭 할 일', 'buf', { r: 'buf' });
+      A('n5-base', '13:30', '14:30', '영어 기초 측정 (baseline)', 'eng', { r: 'base' });
+      A('n5-listen', '14:30', '15:10', '영어 40 · 고속 적응 · 받아쓰기', 'eng', { r: 'listen', loc: lib });
+      A('lib-speak', '15:10', '16:40', '영어 90 · 말하기 (스터디룸)', 'eng', { r: 'speak', loc: '도서관 스터디룸' });
+    } else if (hasClass(ds)) {
       const online = FIX.online[ds], last = ds === FIX.monLast || ds === FIX.thuLast;
-      A('eng-pre', '09:10', '09:55', '영어 45 · 수업 전 듣기', 'eng', { r: 'pre45', loc: '도서관 (이어폰)' });
+      A('lib-pre', '09:10', '09:55', '영어 45 · 수업 전 듣기', 'eng', { r: 'pre45', loc: '도서관 (이어폰)' });
       A('uni', '10:00', '12:00', `TEPI615 Workshop ${wd === 1 ? 'A' : 'B'}${online ? ' · 온라인' : ''}${last ? ' · 마지막' : ''}`, 'uni', { r: 'uni', loc: online ? '온라인 (스터디룸·집)' : 'Rehua 005' });
       A('lunch-c', '12:00', '12:30', '점심', 'rest');
-      A('eng-unirec', '12:30', '12:50', '수업 회수 20', 'eng', { r: 'unirec' });
-      A('asg-cls', '12:50', '14:30', `과제 · ${asgFocus(ds)}`, 'asg', { r: 'asg', loc: 'UC 도서관' });
+      A('unirec', '12:30', '13:00', '수업 회수 30', 'eng', { r: 'unirec' });
+      A('buf', '13:00', '14:00', '버퍼 · 꼭 할 일', 'buf', { r: 'buf' });
+      if (asgOn(ds)) A('asg-c', '14:00', '15:30', `과제 · ${asgFocus(ds)}`, 'asg', { r: 'asg', loc: lib });
+      else A('c-listen', '14:00', '15:30', '영어 90 · 고속 적응 · 받아쓰기', 'eng', { r: 'listen', loc: lib });
+      A('lib-speak60', '15:40', '16:40', '영어 60 · 말하기 (스터디룸)', 'eng', { r: 'speak', loc: '도서관 스터디룸' });
     } else {
-      A('asg-am', '09:10', '10:40', `과제 ① · ${asgFocus(ds)}`, 'asg', { r: 'asg', loc: 'UC 도서관' });
-      A('eng-60', '10:50', '11:50', ph === 'prep' ? '영어 60 · 표준 루틴 첫 회' : '영어 60 · 표준 루틴', 'eng', { r: 'eng60', loc: '도서관 · 말하기는 스터디룸·차 안' });
-      A('lunch', '11:50', '12:20', '점심', 'rest');
-      A('asg-pm', '12:20', '14:30', `과제 ② · ${asgFocus(ds)}`, 'asg', { r: 'asg', loc: 'UC 도서관' });
+      A('lib-deep', '09:10', '10:40', '영어 90 · 집중 듣기', 'eng', { r: 'deep90', loc: `${lib} (이어폰)` });
+      if (ph === 'ready') {
+        if (ds === S.set.litTarget) A('lr-submit', '10:50', '12:20', '문헌 리뷰 마지막 점검 · 제출', 'asg', { r: 'submit', loc: lib });
+        else A('lib-demo', '10:50', '12:20', '수업 시연 90 · 첫 주 리허설', 'demo', { r: 'demo90', loc: '도서관 스터디룸' });
+      } else if (asgOn(ds)) A('asg-a', '10:50', '12:20', `${ph === 'hol' ? '문헌 리뷰' : '과제'} ① · ${asgFocus(ds)}`, 'asg', { r: 'asg', loc: lib });
+      else A('lib-read', '10:50', '12:20', '영어 90 · 읽기 · 표현 · 어휘', 'eng', { r: 'read90', loc: lib });
+      A('lunch', '12:20', '13:00', '점심', 'rest');
+      A('buf', '13:00', '14:00', '버퍼 · 꼭 할 일', 'buf', { r: 'buf' });
+      if (ph === 'ready') A('ready-prep', '14:00', '15:00', '부임 준비 · 영어로', 'asg', { r: 'ready', loc: lib });
+      else if (asgOn(ds)) A('asg-b', '14:00', '15:00', `${ph === 'hol' ? '문헌 리뷰' : '과제'} ② · ${asgFocus(ds)}`, 'asg', { r: 'asg', loc: lib });
+      else A('lib-listen', '14:00', '15:00', '영어 60 · 고속 적응 · 받아쓰기', 'eng', { r: 'listen', loc: lib });
+      A('lib-speak', '15:10', '16:40', '영어 90 · 말하기 (스터디룸)', 'eng', { r: 'speak', loc: closed ? '집' : '도서관 스터디룸' });
     }
-    A('pickup', '14:35', '15:05', '하교 픽업', 'move', { r: 'move' });
-    evening('fam-pm', '15:05');
-  } else if (ph === 'hol') {
-    famAm();
-    if (hasClass(ds)) {
-      A('prep-hol2', '07:00', '09:20', '아침 · 아이들 (돌봄 확인)', 'fam', { r: 'famHol' });
-      A('run-c', '09:20', '10:00', '이동 · Pocket 듣기', 'move', { r: 'move' });
-      A('uni', '10:00', '12:00', `TEPI615 Workshop B${ds === FIX.thuLast ? ' · 마지막' : ''}`, 'uni', { r: 'uni', loc: 'Rehua 005' });
-      A('lunch-c', '12:00', '12:30', '점심', 'rest');
-      A('eng-unirec', '12:30', '12:50', '수업 회수 20', 'eng', { r: 'unirec' });
-      A('move-home', '12:50', '13:20', '귀가', 'move', { r: 'move' });
-      A('fam-hol2', '13:20', '19:30', '가족 · 방학', 'fam', { r: 'famHol' });
-    } else {
-      A('prep-hol', '07:00', '09:00', '아침 · 아이들', 'fam', { r: 'famHol' });
-      A('lr-am', '09:00', '10:30', `문헌 리뷰 · ${asgFocus(ds)}`, 'asg', { r: 'asg' });
-      A('eng-60h', '10:45', '11:45', '영어 60 · 표준 루틴', 'eng', { r: 'eng60' });
-      A('eng-real', '11:45', '12:30', `영어 실전 45 · ${T.name}`, 'eng', { r: 'real45' });
-      A('fam-hol', '12:30', '19:30', '가족 · 방학', 'fam', { r: 'famHol' });
-    }
-    A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam');
-    A('lr-eve', '20:00', '21:00', '문헌 리뷰 · 집필', 'asg', { r: 'asg' });
-    A('eng-eve-h', '21:00', '21:20', '영어 저녁 20', 'eng', { r: 'eve20' });
-    A('rest-eve-h', '21:20', '22:00', '정리 · 휴식', 'rest');
-  } else if (ph === 'ready') {
-    famAm();
-    const submit = ds === S.set.litTarget;
-    A('prep-hol', '07:00', submit ? '08:30' : '09:00', '아침 · 아이들', 'fam', { r: 'famHol' });
-    if (submit) A('lr-submit', '08:30', '09:00', '문헌 리뷰 + 핸드아웃 제출', 'asg', { r: 'submit' });
-    A('eng-60r', '09:00', '10:00', '영어 60 · 표준 + 고속 적응', 'eng', { r: 'eng60' });
-    A('eng-real-r', '10:15', '11:00', `영어 실전 45 · ${T.name}`, 'eng', { r: 'real45' });
-    A('ready-prep', '11:15', '12:15', '부임 준비 · 영어로', 'asg', { r: 'ready' });
-    A('fam-rdy', '12:15', '19:30', '가족 · 방학', 'fam', { r: 'famHol' });
-    A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam'); eve(); A('rest-eve', '20:30', '22:00', '정리 · 휴식', 'rest');
+    A('home', '16:40', '17:10', closed ? '정리 · 쉬기' : '귀가', 'move', { r: 'move' });
+    evening('fam-pm', '17:10');
   }
   A('sleep-pm', '22:00', '24:00', '취침', 'rest');
   return out;
@@ -775,11 +811,15 @@ function allDayFor(ds) {
   let hasDue = false;
   for (const x of DEADLINES) if (x.at.slice(0, 10) === ds) { push(`마감 ${x.at.slice(11)} · ${x.short}`, 'due'); hasDue = true; }
   for (const m of MILE) if (m.d === ds) push(m.t, m.cat);
+  if (ds === S.set.asgStart) push('과제 시작 — 그 전 과제 칸은 모두 영어', 'asg');
   if (ds === firstMerrin()) push('Merrin 첫 봉사 (예상 · 확인 필요)', 'mer');
   if (ds === S.set.merrinStart && !isMerrinDay(ds)) push(HOLI[ds] ? '봉사 시작 예상일이지만 휴교' : '봉사 시작 예상일 (봉사 요일 아님)', 'mer');
   if (ds === S.set.kidsHoliday) push('아이들 여름방학 시작', 'fam');
+  if (ds === addDays(S.set.litTarget, -1) && ds >= S.set.asgStart) push('목표 · 문헌 리뷰 + 핸드아웃 완성', 'asg');
   if (ds === S.set.litTarget && !hasDue) push('목표 · 문헌 리뷰 제출', 'asg');
   if (ds === S.set.dday) push('부임 D-day', 'mer');
+  if (libClosed(ds) && !LIGHT.has(ds) && dow(ds) % 6) push('UC 도서관 연말 휴관 예상 (작년 12/24–1/4) — 집에서', 'move');
+  if (ds === '2026-11-08') push('도서관 여는 시각 확인 — UC 주말 1pm (작년 여름) · 시립 Tūranga 10am', 'move');
   for (const ev of SCHOOL) if (ds >= ev.d && ds <= (ev.to || ev.d) && (!ev.mo || isMerrinDay(ds))) push(ev.t, 'mer');
   return out;
 }
@@ -894,7 +934,7 @@ function toggleDone(id) {
 /* ═════════ 6. 루틴 (블록을 누르면 보이는 단계) ═════════ */
 function rtOf(b) {
   const ds = b.ds, L = levelOf(ds), tk = topicOf(ds), T = b.generic ? { name: '오늘 주제', ko: '' } : TOPICS[tk], w = weekNo(ds), late = w >= 5, P = asgPlan(ds);
-  const R = { steps: [], notes: [], prompt: false, links: [], phr: false };
+  const R = { steps: [], notes: [], prompt: false, links: [], phr: false, demo: false, tasks: false };
   switch (b.r) {
     case 'eng60':
       R.steps = ['0–10 · 오늘의 훈련 — 대기 복습부터, 정답 보기 전에 먼저 소리 내어 답하기',
@@ -906,20 +946,65 @@ function rtOf(b) {
         '38–48 · [W] 따라하기 → [R] 더빙 → 더빙 명료도 확인',
         `48–60 · 입트기 「${T.name}」 줄여 말하기 4·3·2 (${L.t432}) → 받아 적기 · wpm`,
         '학교에서 쓸 문장만 [E]로 저장 — 3개 이내'];
-      R.notes = [`지금 단계 ${L.name}: ${L.focus}`, `자료: ${L.mat}`, '도서관에서는 소리 내는 단계(7·8번)를 스터디룸·차 안에서 — 안 되면 저녁 블록으로 미루기'];
+      R.notes = [`지금 단계 ${L.name}: ${L.focus}`, `자료: ${L.mat}`, '새벽이라 식구가 자고 있으면 소리 내는 단계(7·8번)는 작게'];
       R.prompt = true; R.links = ['routine', 'phrases', 'speak']; break;
+    case 'deep90':
+      R.steps = ['0–15 · 오늘의 훈련 — 대기 복습부터',
+        `15–55 · 새 회차 2개 (각 3–5분): 1배 · ${L.first} → [Q] → [F] / [X] 사다리 ${L.ladder} → Q 원인 태그 → 자막 끄고 1배`,
+        '55–70 · 받아쓰기: 오늘 Q 줄 5개를 들리는 대로 쓰고 자막과 비교',
+        late ? '70–85 · 고속 적응 ⏩ 1 → 1.25 → 1.5 → 다시 1배' : '70–85 · NZ 모음 2지선다 + 축약 top 10',
+        '85–90 · 학교에서 쓸 문장만 [E]로 저장 (3개 이내) · 오늘 Q 원인 한 줄'];
+      R.notes = [`자료: ${L.mat}`, /도서관/.test(b.loc || '') ? '이어폰으로 듣기만 — 말하기는 오후 스터디룸에서' : '집중 듣기 — 새 자료로'];
+      R.links = ['routine']; break;
+    case 'read90':
+      R.steps = ['학교 글 소리 내어 읽기 15분 — Merrin 통신문 · 웹사이트 한 꼭지 (모르는 말은 문장째 저장)',
+        '표현 모음 30분 — 교실 지시 · 되묻기 · 회의 발언을 🔊 듣고 따라 하기 (도서관이면 입 모양으로)',
+        '키위 · 학교 말 15분 — 단어마다 예문 하나',
+        'NZ 모음 2지선다 · 축약 top 10 — 15분',
+        '오늘 쓸 문장 5개 만들기 → 입트기 프롬프트로 저장'];
+      R.links = ['phrases', 'merrin']; break;
+    case 'listen':
+      R.steps = [late ? '고속 적응 ⏩ 1 → 1.25 → 1.5 → 다시 1배 (이해 확인 문장만)' : `Q 줄 다시 듣기 — [X] 속도 사다리 ${L.ladder}, 반드시 1배 이상으로 끝`,
+        '받아쓰기 10문장 — 오늘 Q 줄에서, 틀린 곳에 원인 태그',
+        'Pocket 연속 듣기 10분 (한 줄 3번 + 쉼)',
+        '틀린 소리 패턴 하나 → 내일 아침 소리 훈련 주제로'];
+      R.links = ['routine']; break;
+    case 'shadow':
+      R.steps = ['어제 저장한 문장 [W] 따라하기 — 한 줄 3번씩', '[R] 더빙 → 더빙 명료도 확인', '교실 표현 10개 소리 내어 (아래 후보 · 표현 모음)', '소리 내어 읽기: 영어 그림책 · 학교 글 1쪽 — 녹음해서 한 번 듣기'];
+      R.phr = true; R.links = ['phrases']; break;
+    case 'speak':
+      R.steps = [`입트기 「${T.name}」 줄여 말하기 4·3·2 (${L.t432})`, '역할극 · Claude ⑥ — 학생 · 동료 · 학부모 중 하나, 예상 못 한 질문 받기', '녹음 확인 → 의미 전달을 막은 것 1–2개만 고치기', '자유 말하기 1분 — 오늘 배운 표현 3개를 넣어서'];
+      R.notes = [/스터디룸/.test(b.loc || '') ? '도서관 그룹 스터디룸 예약 (소리 내기) — 못 잡으면 바깥 벤치 · 차 안' : '소리 내어 · 녹음하며'];
+      R.prompt = true; R.links = ['claude', 'speak']; break;
+    case 'demo': {
+      const dl = demoLevel(ds);
+      R.steps = ['계획 10 · 아래 주제로 WALT 한 문장 + 성공 기준 2개 — 키워드만 (원고 금지)', `시연 ${dl.len} · 휴대폰으로 녹화하며 학생 앞처럼 — ${dl.focus}`, '돌려 보기 · 루브릭에서 2개만 골라 점검', '다시 시연 · 같은 내용을 더 짧고 분명하게', '질문 대응 · Claude ⑥: 학생 역할로 예상 못 한 질문 3개 → 3초 안에 답하기'];
+      R.notes = ['영상은 지우지 말고 토요일 주간 리허설에서 비교'];
+      R.demo = true; R.links = ['demo', 'claude']; break;
+    }
+    case 'demo90': {
+      const dl = demoLevel(ds);
+      R.steps = ['계획 15 · 20분 수업: 도입 → I do → We do → You do → 마무리 (키워드만)', '1차 시연 20분 — 녹화', '루브릭 8개로 점검 · Claude에 수업 흐름을 설명하고 피드백 받기', '2차 시연 20분 — 가장 약한 부분만 고쳐서', '이번 주 시연 영상들을 나란히 보고 나아진 점 한 줄 기록'];
+      R.notes = [`지금 단계: ${dl.len} · ${dl.focus}`];
+      R.demo = true; R.links = ['demo', 'claude']; break;
+    }
+    case 'buf':
+      R.notes = ['꼭 해야 하는 일을 이 시간에 — 위 목록에서 하나씩', `한국 시각 ${koreaRange(ds, b.s, b.e)} — 한국 학교 행정실 연락은 이 시간대에`, '할 일이 없으면 영어 말하기로 쓰기'];
+      R.tasks = true; R.links = ['inbox']; break;
+    case 'dev':
+      R.notes = ['(선택) 같은 본문을 영어 성경으로 한 번 소리 내어 읽기 — 하루 첫 영어 소리']; break;
     case 'pre45':
       R.steps = ['0–15 · 오늘의 훈련 (받아쓰기 → 카드 → Q 재청취 · 더빙은 저녁에)',
         `15–35 · 새 장면 1개: 1배 · ${L.first} → [Q] → [F] / [X] 사다리 ${L.ladder} → [T]는 마지막에만`,
         '35–42 · Q 원인 태그 + NZ 모음 2지선다 5문항',
         '42–45 · 수업 중 목표 1개: 질문 또는 발언 1번 — 첫 문장을 미리 정해 두기'];
-      R.notes = ['도서관용 — 이어폰으로 듣기만. 말하기는 회수 · 저녁 블록에서'];
+      R.notes = ['도서관용 — 이어폰으로 듣기만. 말하기는 오후 스터디룸 · 저녁 블록에서'];
       R.links = ['routine']; break;
     case 'unirec':
       R.steps = ['수업 중 메모한 말 → 실제 문장 추정 (자신 없으면 Claude ④)', '쓸 만한 학술 표현 3개 → 단어장 (과제 글쓰기 재료)', '오늘 한 질문 · 발언을 더 짧고 분명하게 다시 — 입 모양으로라도'];
       R.links = ['claude']; break;
     case 'uni':
-      R.steps = ['못 알아들은 말은 들린 대로 메모 (회수 20분에 처리)', '질문 또는 발언 1번 — 아침에 정한 첫 문장으로 시작', '발표 · 토론 날짜 공지가 나오면 할 일 목록에 적기'];
+      R.steps = ['못 알아들은 말은 들린 대로 메모 (회수 30분에 처리)', '질문 또는 발언 1번 — 아침에 정한 첫 문장으로 시작', '발표 · 토론 날짜 공지가 나오면 할 일 목록에 적기'];
       R.notes = ['영어 수업 2시간 = 듣기 몰입 시간. 교수 · 동료의 말버릇을 관찰'];
       if (FIX.online[ds]) R.notes.push('온라인 수업 — 도서관 스터디룸이나 집에서 (마이크가 필요할 수 있음)');
       if (ds === FIX.thuLast) R.notes.push('방학이 시작된 뒤라 아이 돌봄을 미리 확인');
@@ -934,13 +1019,13 @@ function rtOf(b) {
       R.steps = ['0–8 · 받아쓰기 복습', `8–20 · 입트기 1개 「${T.name}」 4·3·2 (${L.t432})`];
       R.prompt = true; R.links = ['speak']; break;
     case 'merwarm':
-      R.steps = ['오늘 쓸 문장 3개를 소리 내어 3번씩 — 교실 지시 1 · 스몰토크 1 · 질문 1', '되묻기 3개 입에 붙이기: Sorry, what’s ___? · Do you mean ___? · Just to check …'];
+      R.steps = ['오늘 쓸 문장 3개를 소리 내어 3번씩 — 교실 지시 1 · 스몰토크 1 · 질문 1', '되묻기 3개 입에 붙이기: Sorry, what’s ___? · Do you mean ___? · Just to check …', 'Y5–6 교실 지시 1분 시연 — 오늘 반에서 들을 법한 말로'];
       R.phr = true; R.links = ['phrases']; break;
     case 'ddwarm':
-      R.steps = ['면담 첫 인사 3문장 소리 내어 3번', '자기소개 30초 1번'];
+      R.steps = ['면담 첫 인사 3문장 소리 내어 3번', '자기소개 30초 1번', '아이 강점 · 목표를 묻는 질문 2개'];
       R.phr = true; R.links = ['phrases']; break;
     case 'merrin':
-      R.steps = ['첫 인사 + 스몰토크 1번 (How was your weekend? / Busy day today?)', '동료에게 질문 1번 + 확인 질문 1번 (Just to check, do you mean …?)', '☕ morning tea는 교무실에 앉기 — 대화에 한 번 끼어들기', '학생과 대화 3번 이상 — What have you tried so far?', '못 알아들은 말을 수첩에 들린 대로 10–15개 (철자 틀려도 OK)', '12/15 전 확보 목록에서 1개 챙기기'];
+      R.steps = ['첫 인사 + 스몰토크 1번 (How was your weekend? / Busy day today?)', '동료에게 질문 1번 + 확인 질문 1번 (Just to check, do you mean …?)', '☕ morning tea는 교무실에 앉기 — 대화에 한 번 끼어들기', '학생과 대화 3번 이상 — What have you tried so far?', '못 알아들은 말을 수첩에 들린 대로 10–15개 (철자 틀려도 OK)', '선생님이 수업하는 모습에서 교실 지시 3개 받아 적기 (수업 시연 재료)', '12/15 전 확보 목록에서 1개 챙기기'];
       R.notes = ['녹음은 하지 않기 — 동의 없는 녹음은 프라이버시 · 신뢰 문제. 수첩으로 충분', '되묻는 것을 부끄러워하지 않기 — 교사가 모르는 것을 묻는 모습 자체가 모델링', '교실보다 교무실 잡담과 회의가 진짜 어려운 영어 — 의식적으로 그 자리에 앉기'];
       if (ds >= CAMP[0] && ds <= CAMP[1]) R.notes.unshift('Y5/6는 Waipara 캠프 중 — 오늘 어느 반에서 봉사하는지 확인');
       if (ds === FIX.schoolLast || ds === S.set.merrinEnd) R.notes.unshift('마지막 날: “Thanks so much for having me — I’ve learnt heaps.” · 1월에 다시 만날 사람들 이름 확인');
@@ -952,39 +1037,37 @@ function rtOf(b) {
     case 'real45':
       R.steps = [`준비 10 · 상황 「${T.name}」: 키워드 3개만 적기 (원고 금지)`, '말하기 10 · 녹음하며 실제처럼 — 멈추지 말고 끝까지', '질문 대응 10 · Claude ⑥ 역할극: 학생 · 동료 · 학부모가 예상 못 한 질문', '녹음 확인 10 · 의미 전달을 막은 것 1–2개만', '다시 말하기 5 · 같은 내용을 더 짧고 분명하게'];
       R.prompt = true; R.links = ['claude', 'phrases']; break;
-    case 'week90':
+    case 'week60': case 'week90':
       R.steps = [w === 0 ? '첫 주: 요일별 말하기 주제를 보고 입트기에 Y5–6 상황 프롬프트 10개 추가' : '이번 주 Q 원인 통계 → 가장 큰 원인 1개를 다음 주 소리 훈련 주제로',
-        '이번 주 입트기 기록을 통째로 Claude ⑦에 붙여넣기 → 약점 3개 · NZ 교사 버전과 비교',
-        '모의수업 5–10분 (Y5–6) — 녹음 → Claude ⑥이 학생 역할 → 다시 하기',
+        '이번 주 입트기 기록을 통째로 Claude ⑦에 → 약점 3개 · NZ 교사 버전과 비교',
         '다음 주 입트기 프롬프트 3개 — 이번 주 실제로 겪은 상황에서',
         '단어장 정리: 바로 말할 덩어리 15–20개만 남기기'];
       R.notes = [`주간 배분: ${L.ratio}`];
       R.links = ['claude', 'metrics']; break;
     case 'metric20':
       R.steps = ['같은 시리즈의 새 회차 3분 · 무자막 1회 → 이해율 %', '연습 안 한 문장 5개 받아쓰기 (1배 · 최대 2회) → 정확도 %', '이번 주 Q 비율과 Q 원인 비율 (SubTutor 통계)', '입트기 60초 1개 → wpm · 즉답 10문항 중 5초 안에 시작한 수', '지표에 기록 → 다음 주 일정 훑어보기'];
-      R.notes = ['이해율은 같은 시리즈로만 비교 · 하나만 본다면 Q 비율 (영상 난이도·컨디션에 덜 흔들린다)'];
+      R.notes = ['이해율은 같은 시리즈로만 비교 · 하나만 본다면 Q 비율 (영상 난이도 · 컨디션에 덜 흔들린다)'];
       R.links = ['metrics']; break;
     case 'base':
       R.steps = ['Educators 처음 보는 회차 3–5분 · 자막 없이 1회 → 이해율 %', '같은 구간의 처음 듣는 문장 5개 받아쓰기 → 단어 정확도 %', '입트기 60초 자기소개 1개 → wpm', '즉답 10문항 (Claude에게 학교 상황 질문을 받기) → 5초 안에 말을 시작한 수', '지표에 「기초」로 기록'];
       R.notes = ['숫자 없이 시작하면 11주 뒤에 늘었는지도 알 수 없다'];
       R.links = ['metrics', 'claude']; break;
-    case 'light30':
-      R.steps = ['오늘의 훈련 15분', '입트기 1개 (자유 주제) 또는 Pocket으로 저장 문장 연속 듣기'];
-      R.notes = ['쉬는 날도 30분은 한다 — 연속 일수가 끊기는 게 하루 빠지는 것보다 비싸다'];
-      if (HOLI[ds] && phaseOf(ds) === 'term') R.notes.push('과제가 밀렸다면 과제 60분 (선택)');
-      break;
+    case 'light': case 'light30':
+      R.steps = ['오늘의 훈련 15분', '새 장면 1개 또는 Pocket 연속 듣기', '입트기 1개 (자유 주제)', '(선택) 수업 시연 도입 5분'];
+      R.notes = ['쉬는 날도 아침 영어는 한다 — 연속 일수가 끊기는 게 하루 빠지는 것보다 비싸다']; break;
     case 'asg': case 'asgOpt':
       R.steps = (b.r === 'asgOpt' ? ['이번 주 과제 목표가 밀렸을 때만 — 아니면 가족 시간으로'] : []).concat(P ? P.steps : []);
       if (P) { if (P.a.includes('I')) R.notes.push(REQ.I); if (P.a.includes('L')) R.notes.push(REQ.L); }
+      R.notes.push('영어가 우선 — 과제는 이 칸 안에서만. 끝나면 남은 시간은 영어로');
       R.notes.push('AI: 주제 · 관점 탐색에만 · 집필은 전부 본인 · 출처는 원문 확인 · 끝에 AI 사용 진술 (쓴 대화는 메모)');
       if (P && /발표/.test(P.t)) R.notes.push('발표 = 말하기 훈련: 원고 대신 키워드 + 입트기 4·3·2');
       R.links = ['inbox', 'claude']; break;
     case 'ready':
-      R.steps = ['Y5–6 첫 주 계획을 영어로 말하면서 쓰기 (첫날 · 학급 약속 · 하루 루틴)', '자기소개 다듬기: 교무실 45초 · 학급 60초 · 학부모 30초', '학교 문서(통신문 · PB4L · 학교 가치) 소리 내어 읽기 10분', 'Kanohi ki te kanohi 면담 질문 5개 정리'];
-      R.links = ['phrases', 'claude']; break;
+      R.steps = ['Y5–6 첫 주 계획을 영어로 말하면서 쓰기 (첫날 · 학급 약속 · 하루 루틴)', '자기소개 다듬기: 교무실 45초 · 학급 60초 · 학부모 30초', '학교 글(통신문 · PB4L · 학교 가치) 소리 내어 읽기 10분', 'Kanohi ki te kanohi 면담 질문 5개 정리'];
+      R.links = ['phrases', 'demo']; break;
     case 'submit':
       R.steps = ['Learn에 문헌 리뷰 + 핸드아웃 올리기', '단어 수 (3,000 ±10%) · APA 7 · AI 사용 진술 확인', '제출 확인 화면 저장'];
-      R.notes = ['조기 제출 9:00 AM · 최종 마감 1/17(일) 23:59']; break;
+      R.notes = ['최종 마감 1/17(일) 23:59 — 오늘 내면 주말은 온전히 영어 · 가족']; break;
     case 'dday':
       R.steps = ['첫 인사 3문장 — 워밍업 그대로', '면담마다 한 줄 메모: 아이의 강점 · 목표 · 연락 방법', '못 알아들은 말은 수첩에 — 저녁에 회수'];
       R.notes = ['Kanohi ki te kanohi (1/28–29) 시간표는 학교에서 확인 → 블록을 길게 눌러 맞추기'];
@@ -994,7 +1077,7 @@ function rtOf(b) {
     case 'fam':
       R.notes = ['이동 · 설거지 · 산책 중 SubTutor Pocket 오프라인 듣기 — 공부 시간으로 치지 않기']; break;
     case 'famHol':
-      R.notes = ['아이들과 영어 그림책 · 노래 — 소리 내기 연습 겸', '아이 돌봄 사정에 따라 공부 블록을 길게 눌러 옮기기', 'Pocket 듣기는 추가 시간으로 치지 않기']; break;
+      R.notes = ['아이들과 영어 그림책 · 노래 — 소리 내기 연습 겸', '아이 돌봄 사정에 따라 공부 블록을 길게 눌러 옮기기']; break;
     case 'move':
       R.notes = ['차 안: Pocket으로 저장 문장 연속 듣기 (한 줄 3번 + 쉼)']; break;
   }
@@ -1008,6 +1091,36 @@ function phrasesOfDay(ds) {
   const pick = k => { const sec = PHRASES.find(x => x.k === k); return sec.items[((n % sec.items.length) + sec.items.length) % sec.items.length]; };
   return [pick('instr'), pick('small'), pick('ask')];
 }
+
+function demoLevelW(w) { return w <= 2 ? { len: '5분', focus: '도입: 훅 질문 → WALT → 성공 기준 2개' } : w <= 4 ? { len: '10분', focus: '도입 + 모델링(I do) + 이해 확인' } : w <= 8 ? { len: '15–20분', focus: 'I do → We do → You do + 질문 대응' } : { len: '20–30분', focus: '첫 주 실제 수업 리허설 (첫날 · 수학 · 읽기)' }; }
+const demoLevel = ds => demoLevelW(weekNo(ds));
+let demoShift = 0;
+function demoOf(ds) { const n = daysBetween(FIX.planStart, ds) + demoShift; return DEMO_TOPICS[((n % DEMO_TOPICS.length) + DEMO_TOPICS.length) % DEMO_TOPICS.length]; }
+function demoCardHTML(ds) {
+  const d = demoOf(ds), dl = demoLevel(ds);
+  return `<div class="gh">오늘 시연 주제 <button data-dshuffle class="small" style="color:var(--tint)">↻ 다른 주제</button></div><div class="group pcard"><div class="en">${esc(d.t)}</div><div class="ko">WALT — ${esc(d.w)}</div>${d.y34 ? `<div class="ko">${esc(d.y34)}</div>` : ''}<div class="acts"><button data-say="${esc(d.w)}">🔊 WALT 듣기</button><button data-copy="${esc(d.w)}">⧉ 복사</button></div><div class="ko" style="margin-top:8px">이번 단계 ${esc(dl.len)} · ${esc(dl.focus)}</div></div>`
+    + `<div class="gh">루브릭 — 2개만 골라 점검</div><div class="group txt small"><ol>${DEMO_RUBRIC.map(x => `<li>${esc(x)}</li>`).join('')}</ol></div>`;
+}
+function tasksHTML() {
+  const open = S.tasks.filter(t => !t.done).sort((a, b) => (a.due || '9999') < (b.due || '9999') ? -1 : (a.due || '9999') > (b.due || '9999') ? 1 : 0);
+  const done = S.tasks.filter(t => t.done);
+  const row = t => `<div class="chk task${t.done ? ' on' : ''}" data-tk="${esc(t.id)}" style="--c:${CATS.buf.c}"><span class="bx"></span><span class="lbl">${esc(t.t)}${t.due ? ` <small class="${!t.done && t.due < today ? 'late' : ''}">~${esc(dLabel(t.due))}</small>` : ''}</span><button class="tdel" data-tdel="${esc(t.id)}" aria-label="지우기">×</button></div>`;
+  return `<div class="group">${open.map(row).join('') || '<div class="txt muted small">남은 할 일이 없어요</div>'}<div class="tadd"><input id="tIn" placeholder="+ 꼭 할 일 추가" maxlength="90" enterkeyhint="done"><input id="tDue" type="date" aria-label="언제까지"><button data-tadd>추가</button></div></div>`
+    + (done.length ? `<details class="group"><summary class="row"><span class="muted small">끝낸 일 ${done.length}개</span></summary>${done.map(row).join('')}</details>` : '');
+}
+function taskClick(e, el, rerender) {
+  const del = e.target.closest('[data-tdel]');
+  if (del) { snap(); S.tasks = S.tasks.filter(t => t.id !== del.dataset.tdel); save(); updateBadge(); rerender(); toast('지웠어요', true); return true; }
+  const tk = e.target.closest('[data-tk]');
+  if (tk) { const t = S.tasks.find(x => x.id === tk.dataset.tk); if (t) { snap(); t.done = t.done ? 0 : 1; if (t.done) t.doneAt = today; save(); updateBadge(); rerender(); if (t.done) toast('끝냈어요 ✓', true); } return true; }
+  if (e.target.closest('[data-tadd]')) {
+    const inp = $('#tIn', el), due = $('#tDue', el), v = inp ? inp.value.trim() : '';
+    if (!v) { if (inp) inp.focus(); return true; }
+    snap(); S.tasks.push({ id: 't' + Date.now().toString(36), t: v, due: (due && due.value) || '', done: 0 }); save(); updateBadge(); rerender(); toast('추가했어요', true); return true;
+  }
+  return false;
+}
+const taskEnter = el => e => { if (e.key === 'Enter' && e.target && e.target.id === 'tIn') { e.preventDefault(); const a = el.querySelector('[data-tadd]'); if (a) a.click(); } };
 
 /* ═════════ 7. 화면: 날짜 표시 ═════════ */
 const LOC = {
@@ -1102,7 +1215,7 @@ function blockHTML(b) {
   return `<div class="ev ${size}${S.done[b.id] ? ' done' : ''}${b.opt ? ' opt' : ''}" data-id="${esc(b.id)}" style="--c:${cat.c};--on:${cat.on};--s:${b.s};--d:${b.e - b.s};--col:${b._col || 0};--cols:${b._cols || 1}">`
     + `<button class="ck" aria-label="완료 표시"></button>`
     + `<div class="tx"><div class="t">${esc(b.title)}${b.opt ? ' <em>· 선택</em>' : ''}</div>`
-    + `<div class="tm">${CLOCK}<span>${fmtRange(b.s, b.e)}${sc ? ` · ${sc.k}/${sc.n}` : ''}${b.loc && size === 'l' ? ' · ' + esc(b.loc) : ''}</span></div></div>`
+    + `<div class="tm">${CLOCK}<span>${fmtRange(b.s, b.e)}${sc ? ` · ${sc.k}/${sc.n}` : ''}${b.r === 'buf' && size !== 's' ? ' · 한국 ' + esc(koreaAt(b.ds, b.s)) : ''}${b.loc && size === 'l' ? ' · ' + esc(b.loc) : ''}</span></div></div>`
     + `<span class="left"></span>${subs}<i class="hd a"></i><i class="hd b"></i></div>`;
 }
 function renderGrid(anim) {
@@ -1160,7 +1273,7 @@ function renderNowCard(cur, next, mi) {
   }
 }
 function updateBadge() {
-  let n = 0;
+  let n = S.tasks.filter(t => !t.done).length;
   for (const g of INBOX) if (g.badge) for (const [id] of g.items) if (!S.inbox[id]) n++;
   $('#inboxBadge').textContent = n ? String(n) : '';
 }
@@ -1250,7 +1363,7 @@ function nowBoxHTML(id) {
   const pct = clamp((mi - b.s) / Math.max(1, b.e - b.s) * 100, 0, 100);
   return `<div id="dtNow"><div class="gh">지금 진행 중</div><div class="group dt-now" style="--c:${CATS[b.cat].c}"><div class="r"><b>${hhmm(b.e - mi)}</b><span class="muted small">남음 · ${durText(mi - b.s)} 지남</span></div><div class="prog"><i style="width:${pct.toFixed(1)}%"></i></div></div></div>`;
 }
-const LINKS = { routine: ['루틴 전체 보기', 'routine'], phrases: ['표현 모음', 'phrases'], claude: ['Claude 프롬프트', 'claude'], metrics: ['지표 기록', 'metrics'] };
+const LINKS = { routine: ['루틴 전체 보기', 'routine'], phrases: ['표현 모음', 'phrases'], claude: ['Claude 프롬프트', 'claude'], metrics: ['지표 기록', 'metrics'], demo: ['수업 시연 가이드', 'demo'] };
 function detailHTML(b) {
   const cat = CATS[b.cat], R = rtOf(b), done = !!S.done[b.id], st = S.steps[b.id] || {};
   const k = R.steps.filter((_, i) => st[i]).length;
@@ -1261,10 +1374,12 @@ function detailHTML(b) {
   if (R.steps.length) h += `<div class="gh">단계 <b>${k}/${R.steps.length}</b></div><div class="group">${R.steps.map((s, i) => `<div class="chk${st[i] ? ' on' : ''}" data-step="${i}" style="--c:${cat.c}"><span class="bx"></span><span class="lbl">${fmtStep(s)}</span></div>`).join('')}</div>`;
   if (R.prompt) { const { T, p } = promptOf(b.ds); h += `<div class="gh">오늘의 말하기 · ${esc(T.name)}</div><div class="group pcard"><div class="en">${esc(p)}</div><div class="ko">${esc(T.ko)}</div><div class="acts"><button data-say="${esc(p)}">🔊 듣기</button><button data-copy="${esc(p)}">⧉ 복사 → 입트기 프롬프트</button><button data-shuffle>↻ 다른 상황</button></div></div>`; }
   if (R.phr) h += `<div class="gh">오늘 쓸 문장 후보 <button data-shuffle class="small" style="color:var(--tint)">↻ 바꾸기</button></div><div class="group">${phrasesOfDay(b.ds).map(([en, ko]) => `<div class="phr"><div class="p"><div>${esc(en)}</div>${ko ? `<small>${esc(ko)}</small>` : ''}</div><button data-say="${esc(en)}" aria-label="듣기">🔊</button></div>`).join('')}</div>`;
+  if (R.demo) h += demoCardHTML(b.ds);
+  if (R.tasks) h += `<div class="gh">꼭 할 일 <b>${S.tasks.filter(t => !t.done).length}개 남음</b></div>` + tasksHTML();
   if (R.notes.length) h += `<div class="gh">메모</div><div class="group txt"><ul>${R.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul></div>`;
   if (b.note) h += `<div class="gh">내 메모</div><div class="group txt"><p>${esc(b.note).replace(/\n/g, '<br>')}</p></div>`;
-  const links = R.links.filter(x => LINKS[x] || x === 'inbox' || x === 'speak');
-  if (links.length) h += `<div class="group pills">${links.map(x => x === 'speak' ? `<a class="pill" href="${SPEAK_URL}" target="_blank" rel="noopener">입트기 (웹) ↗</a>` : x === 'inbox' ? `<button class="pill" data-inbox>할 일 목록</button>` : `<button class="pill" data-guide="${LINKS[x][1]}">${LINKS[x][0]}</button>`).join('')}</div>`;
+  const links = R.links.filter(x => LINKS[x] || x === 'inbox' || x === 'speak' || x === 'merrin');
+  if (links.length) h += `<div class="group pills">${links.map(x => x === 'speak' ? `<a class="pill" href="${SPEAK_URL}" target="_blank" rel="noopener">입트기 (웹) ↗</a>` : x === 'merrin' ? `<a class="pill" href="https://merrin.school.nz" target="_blank" rel="noopener">Merrin 통신문 ↗</a>` : x === 'inbox' ? `<button class="pill" data-inbox>할 일 목록</button>` : `<button class="pill" data-guide="${LINKS[x][1]}">${LINKS[x][0]}</button>`).join('')}</div>`;
   h += `<div class="gh">시간 조정 · 이 날만</div><div class="group"><div class="row"><span>${b.ds === today && nowI() >= b.s && nowI() < b.e ? '이 블록 늘리고 뒤 블록 밀기' : '이 블록부터 뒤로 밀기'}</span><button class="pill" data-push="10">+10분</button><button class="pill" data-push="15">+15분</button><button class="pill" data-push="30">+30분</button></div></div>`;
   h += `<div class="group"><button class="btn" data-del>블록 지우기</button>${b.mod && b.kind !== 'extra' ? '<button class="btn" data-reset>이 블록 편집 되돌리기</button>' : ''}</div>`;
   h += `<p class="muted small" style="margin:4px 6px">블록을 길게 눌러 끌면 시간 옮기기 · 위·아래 가장자리를 끌면 길이 조절</p></div>`;
@@ -1278,7 +1393,10 @@ function openDetail(b) {
   openSheet(detailHTML(b), { state, mount: el => bindDetail(el, b) });
 }
 function bindDetail(el, b) {
+  el.onkeydown = taskEnter(el);
   el.onclick = e => {
+    if (taskClick(e, el, refreshSheet)) return;
+    if (e.target.closest('[data-dshuffle]')) { demoShift++; refreshSheet(); return; }
     const t = e.target.closest('[data-done],[data-step],[data-edit],[data-del],[data-reset],[data-push],[data-shuffle]');
     if (!t) return;
     if (t.matches('[data-done]')) toggleDone(b.id);
@@ -1362,6 +1480,7 @@ function openCals() {
       + `<div class="gh">날짜 (바꾸면 일정이 다시 짜여요)</div><div class="group">`
       + `<label class="row"><span>Merrin 봉사 시작</span><input type="date" data-set="merrinStart" value="${S.set.merrinStart}"></label>`
       + `<label class="row"><span>봉사 마지막 날</span><input type="date" data-set="merrinEnd" value="${S.set.merrinEnd}"></label>`
+      + `<label class="row"><span>과제 시작 (그 전엔 영어만)</span><input type="date" data-set="asgStart" value="${S.set.asgStart}"></label>`
       + `<label class="row"><span>아이들 방학 시작</span><input type="date" data-set="kidsHoliday" value="${S.set.kidsHoliday}"></label>`
       + `<label class="row"><span>문헌 리뷰 제출 목표</span><input type="date" data-set="litTarget" value="${S.set.litTarget}"></label>`
       + `<label class="row"><span>부임일</span><input type="date" data-set="dday" value="${S.set.dday}"></label></div>`
@@ -1372,7 +1491,7 @@ function openCals() {
       + `<label class="row"><span>테마</span><select data-set="theme"><option value="auto"${S.set.theme === 'auto' ? ' selected' : ''}>기기 따라</option><option value="light"${S.set.theme === 'light' ? ' selected' : ''}>밝게</option><option value="dark"${S.set.theme === 'dark' ? ' selected' : ''}>어둡게</option></select></label>`
       + `<label class="row"><span>시간 칸 크기</span><input type="range" min="36" max="150" step="2" data-set="hourH" value="${S.set.hourH}"></label></div>`
       + `<p class="muted small" style="margin:-6px 8px 10px">시간 칸 크기는 두 손가락으로 벌리거나 오므려도 바뀌어요 (Mac은 ⌃ + 스크롤).</p>`
-      + `<div class="gh">사용법</div><div class="group txt"><ul><li>블록 왼쪽 동그라미 = 완료 (가로줄)</li><li>블록 누르기 = 단계 · 메모 · 남은 시간</li><li>블록 길게 눌러 끌기 = 시간 옮기기 · 위·아래 가장자리 = 길이</li><li>빈 곳 길게 누르기 (Mac은 더블클릭) = 새 블록</li><li>시간 칸을 좌우로 밀기 = 다른 날</li><li>반복 블록은 「이 날만 / 매주 같은 요일 / 앞으로 모든 날」 중에서 고르기</li></ul></div>`
+      + `<div class="gh">사용법</div><div class="group txt"><ul><li>블록 왼쪽 동그라미 = 완료 (가로줄)</li><li>블록 누르기 = 단계 · 메모 · 남은 시간</li><li>블록 길게 눌러 끌기 = 시간 옮기기 · 위·아래 가장자리 = 길이</li><li>빈 곳 길게 누르기 (Mac은 더블클릭) = 새 블록</li><li>시간 칸을 좌우로 밀기 = 다른 날</li><li>반복 블록은 「이 날만 / 매주 같은 요일 / 앞으로 모든 날」 중에서 고르기</li><li>분홍 버퍼 블록 = 꼭 할 일 시간 — 목록은 할 일(Inbox) 맨 위</li></ul></div>`
       + `<div class="gh">기록 (이 기기에만 저장)</div><div class="group">`
       + `<button class="btn l" data-export>백업 복사 — 다른 기기로 옮길 때</button><button class="btn l" data-import>백업 붙여넣기</button>`
       + `<button class="btn l" data-reset-day>${esc(dLabel(sel))} 편집 되돌리기</button><button class="btn l" data-reset-edits>모든 일정 편집 되돌리기</button><button class="btn l" data-reset-done>완료 표시 모두 지우기</button><button class="btn l" data-reset-all style="color:var(--tint)">전부 처음으로</button></div>`
@@ -1400,6 +1519,7 @@ function openCals() {
       else if (t.type === 'date') { if (!/^\d{4}-\d{2}-\d{2}$/.test(t.value)) return; S.set[k] = t.value; }
       else S.set[k] = t.value;
       if (S.set.merrinStart > S.set.merrinEnd) toast('봉사 시작이 마지막 날보다 늦어요');
+      if (S.set.asgStart > S.set.litTarget) toast('과제 시작이 리뷰 제출 목표보다 늦어요');
       if (S.set.kidsHoliday > S.set.litTarget || S.set.litTarget > S.set.dday) toast('방학 → 리뷰 제출 → 부임 순서가 맞는지 확인해 주세요');
       save(); applyTheme(); renderAll();
       if (t.type !== 'range') render();
@@ -1434,6 +1554,7 @@ function deadlineBox(x) {
 function openInbox() {
   const render = () => {
     let h = `<div class="sh-head"><span style="min-width:52px"></span><div class="ttl">${LL().inbox}</div><button data-x class="b">완료</button></div><div class="sh-body">`;
+    h += `<div class="gh">꼭 할 일 · 버퍼 시간에 <b>${S.tasks.filter(t => !t.done).length}개 남음</b></div>` + tasksHTML();
     h += `<div class="gh">과제 마감 (Learn)</div><div class="group">${DEADLINES.map(x => `<div class="dl-row">${deadlineBox(x)}<div class="ii"><b>${esc(x.t)}</b> <span class="muted small">${esc(x.w)}</span><small>${esc(dLabel(x.at.slice(0, 10)))} ${x.at.slice(11)} · ${esc(x.note)}</small></div></div>`).join('')}`
       + `<div class="dl-row"><div class="dd" style="--c:var(--ink2)"><b>?</b><small>확인</small></div><div class="ii"><b>Issues 발표</b><small>마감 전 수업 시간에 · 날짜 확인 필요 (월·목 수업)</small></div></div>`
       + `<div class="dl-row"><div class="dd" style="--c:var(--ink2)"><b>?</b><small>확인</small></div><div class="ii"><b>문헌 리뷰 동료 토론 진행</b><small>핸드아웃으로 진행 · 날짜 확인 필요</small></div></div></div>`;
@@ -1446,7 +1567,9 @@ function openInbox() {
     if (up.length) h += `<div class="gh">다가오는 Merrin 일정</div><div class="group">${up.slice(0, 8).map(([d, t]) => `<div class="sr" data-goto="${d}" style="--c:${CATS.mer.c}"><i></i><div><b>${esc(t.replace(/^Merrin: /, ''))}</b><small>${esc(dLabel(d))}</small></div></div>`).join('')}</div>`;
     h += '</div>';
     keepScroll(() => openSheet(h, { full: true, state: { kind: 'inbox', refresh: render }, mount: el => {
+      el.onkeydown = taskEnter(el);
       el.onclick = e => {
+        if (taskClick(e, el, render)) return;
         const c = e.target.closest('[data-ib]');
         if (c) { const id = c.dataset.ib; if (S.inbox[id]) delete S.inbox[id]; else S.inbox[id] = 1; save(); updateBadge(); render(); return; }
         const g = e.target.closest('[data-goto]');
@@ -1461,14 +1584,16 @@ function openInbox() {
 let guideTab = 'plan';
 function phaseList() {
   return [
-    { k: 'prep', name: '준비 주', from: FIX.planStart, to: addDays(FIX.course1, -1), eng: '1–2시간', focus: '기초 측정 · 과제 주제 · 루틴 한 번씩' },
-    { k: 'term', name: '학기', from: FIX.course1, to: addDays(S.set.kidsHoliday, -1), eng: '1시간 25–35분 + 봉사 8시간 (수·금)', focus: '수업 월·목 · Merrin 수·금 · Issues 12/14 · 회수 루프' },
-    { k: 'hol', name: '방학 + 문헌 리뷰', from: S.set.kidsHoliday, to: addDays(S.set.litTarget, -1), eng: '2시간 5분', focus: '문헌 리뷰 하루 2.5시간 · 실전 45분 · 성탄·연말은 가볍게' },
-    { k: 'ready', name: '부임 준비', from: S.set.litTarget, to: addDays(S.set.dday, -1), eng: '2시간 15분 + 준비 1시간', focus: '고속 적응 · 모의수업 · 학부모 면담 리허설 · 첫 주 계획' },
-    { k: 'dday', name: '부임', from: S.set.dday, to: FIX.planEnd, eng: '워밍업 + 회수', focus: 'Kanohi ki te kanohi 면담 · 2/1 개학' },
+    { k: 'prep', name: '준비 주', from: FIX.planStart, to: addDays(FIX.course1, -1), focus: '과제 없이 영어만 · 기초 측정 · 수업 시연 시작' },
+    { k: 'term', name: '학기', from: FIX.course1, to: addDays(S.set.kidsHoliday, -1), focus: `과제는 ${dLabel(S.set.asgStart)}부터 (영어 우선) · Merrin 수·금 · Issues 12/14` },
+    { k: 'hol', name: '방학 + 문헌 리뷰', from: S.set.kidsHoliday, to: addDays(S.set.litTarget, -1), focus: '문헌 리뷰 평일 2시간 30분 · 연말엔 도서관 휴관 예상 (12/24–1/4)' },
+    { k: 'ready', name: '부임 준비', from: S.set.litTarget, to: addDays(S.set.dday, -1), focus: '첫 주 수업 리허설 · 학부모 면담 리허설 · 부임 준비' },
+    { k: 'dday', name: '부임', from: S.set.dday, to: FIX.planEnd, focus: 'Kanohi ki te kanohi 면담 · 2/1 개학' },
   ].filter(p => p.from <= p.to);
 }
-function engDoneOn(ds) { return blocksFor(ds).some(b => b.cat === 'eng' && S.done[b.id]); }
+const isEng = b => (b.cat === 'eng' || b.cat === 'demo') && !b.opt;
+function avgEng(from, to) { let sum = 0, n = 0; for (let d = from; d <= to && n < 120; d = addDays(d, 1), n++) for (const b of blocksFor(d)) if (isEng(b)) sum += b.e - b.s; return n ? sum / n : 0; }
+function engDoneOn(ds) { return blocksFor(ds).some(b => isEng(b) && S.done[b.id]); }
 function streak() { let n = 0, d = today; if (!engDoneOn(d)) d = addDays(d, -1); for (let i = 0; i < 120 && d >= FIX.planStart && engDoneOn(d); i++, d = addDays(d, -1)) n++; return n; }
 function weekTotals(ds) {
   const start = addDays(ds, -dow(ds)), tot = {};
@@ -1476,32 +1601,41 @@ function weekTotals(ds) {
   for (let i = 0; i < 7; i++) for (const b of blocksFor(addDays(start, i))) {
     if (b.opt) continue;
     const m = b.e - b.s; tot[b.cat] = (tot[b.cat] || 0) + m;
-    if (b.cat === 'eng') { eAll += m; if (S.done[b.id]) eDone += m; }
+    if (isEng(b)) { eAll += m; if (S.done[b.id]) eDone += m; }
   }
   return { tot, eAll, eDone, start };
 }
 function guidePlan() {
   const L = levelOf(sel), ph = phaseOf(sel), w = weekNo(sel), wt = weekTotals(sel), md = merrinDays();
-  const maxM = Math.max(1, ...['eng', 'asg', 'uni', 'mer'].map(k => wt.tot[k] || 0));
+  const BAR = ['eng', 'demo', 'asg', 'uni', 'mer', 'buf'];
+  const maxM = Math.max(1, ...BAR.map(k => wt.tot[k] || 0));
   const phases = phaseList();
   const cur = phases.find(p => p.k === ph);
-  let h = `<div class="group"><div class="stat"><div><b>${streak()}일</b><small>🔥 연속 (영어 완료)</small></div><div><b>${durText(wt.eAll)}</b><small>이번 주 영어</small></div><div><b>${wt.eAll ? Math.round(wt.eDone / wt.eAll * 100) : 0}%</b><small>영어 완료</small></div></div>`
+  let h = `<div class="group"><div class="stat"><div><b>${streak()}일</b><small>🔥 연속 (영어 완료)</small></div><div><b>${durText(wt.eAll)}</b><small>이번 주 영어 · 시연</small></div><div><b>${wt.eAll ? Math.round(wt.eDone / wt.eAll * 100) : 0}%</b><small>완료</small></div></div>`
     + `<div class="txt"><b>${cur ? esc(cur.name) : '계획 밖'}</b>${cur ? ` <span class="muted small">${esc(dLabel(cur.from))} – ${esc(dLabel(cur.to))}</span>` : ''}<br>${w ? `${w}주차` : '준비 주'} · ${esc(L.name)} — ${esc(L.focus)}</div>`
-    + `<div class="bars">${['eng', 'asg', 'uni', 'mer'].map(k => `<div class="br"><span>${esc(CATS[k].name)}</span><div class="tr"><i style="width:${((wt.tot[k] || 0) / maxM * 100).toFixed(0)}%;background:${CATS[k].c}"></i></div><span>${durText(wt.tot[k] || 0)}</span></div>`).join('')}</div></div>`;
+    + `<div class="bars">${BAR.map(k => `<div class="br"><span>${esc(CATS[k].name.split(' · ')[0])}</span><div class="tr"><i style="width:${((wt.tot[k] || 0) / maxM * 100).toFixed(0)}%;background:${CATS[k].c}"></i></div><span>${durText(wt.tot[k] || 0)}</span></div>`).join('')}</div></div>`;
+  h += `<div class="gh">하루 틀</div><div class="group txt small"><ul>`
+    + `<li><b>매일 5:00</b> 매일성경 묵상 → <b>5:30–8:00</b> 영어 (집 · 평일은 표준 60 + 수업 시연 45 + 쉐도잉 45)</li>`
+    + `<li><b>평일 도서관 9:10–4:40</b> 영어 · 과제(${esc(dLabel(S.set.asgStart))}부터) · <b>버퍼 1–2시</b> (한국 오전 9–10시) — 하교 픽업 없음</li>`
+    + `<li><b>수 · 금</b> Merrin 봉사 8–4 → 회수 → 버퍼 5–5:30</li>`
+    + `<li><b>토</b> 영어 5:30–8:30 (시연 리허설 포함) · 가족 8:30–7 · 영어 7–8</li>`
+    + `<li><b>일</b> 영어 5:30–8:30 (집) · 도서관 9–12:30 · 그다음 가족</li></ul></div>`;
   h += `<div class="gh">핵심 판단</div><div class="group txt"><ol>`
-    + `<li><b>막는 것은 어휘가 아니라 소리 해독 속도.</b> 10년 가르치고 영어로 석사를 하는 중이면 단어와 문장 구조는 충분하다. 못 알아듣는 40%는 거의 전부 NZ 모음 · 축약 · 말 속도 · 관용어 · 다자 대화 쪽.</li>`
-    + `<li><b>말하기 병목은 정확도가 아니라 인출 속도.</b> 새 표현보다 아는 표현을 자동화한다 (4·3·2 줄여 말하기, 매일 최소 10분).</li>`
-    + `<li><b>가장 큰 자산은 Merrin 봉사</b> — ${md.length}일 · 약 ${Math.round(md.reduce((a, d) => a + (d === FIX.schoolLast ? 6.25 : 8), 0))}시간 (${md.length ? esc(dLabel(md[0])) + ' – ' + esc(dLabel(md[md.length - 1])) : '–'}). SubTutor는 그날 못 알아들은 것을 회수하는 장치.</li>`
-    + `<li><b>과제는 일찍 끝낼수록 영어 시간이 는다.</b> Issues 12/10 제출 · 문헌 리뷰 1/11 9:00 조기 제출이 목표 → 1/11–1/27은 영어 · 부임 준비 전념.</li></ol></div>`;
-  h += `<div class="gh">단계</div><div class="group tw"><table class="t"><tr><th>단계</th><th>기간</th><th>영어 / 일</th><th>중심</th></tr>${phases.map(p => `<tr class="${p.k === ph ? 'cur' : ''}"><td><b>${esc(p.name)}</b></td><td class="num">${esc(dLabel(p.from))}<br>– ${esc(dLabel(p.to))}</td><td>${esc(p.eng)}</td><td>${esc(p.focus)}</td></tr>`).join('')}</table></div>`;
+    + `<li><b>막는 것은 어휘가 아니라 소리 해독 속도.</b> 못 알아듣는 40%는 거의 전부 NZ 모음 · 축약 · 말 속도 · 관용어 · 다자 대화 쪽.</li>`
+    + `<li><b>말하기 병목은 인출 속도</b> — 새 표현보다 아는 표현의 자동화 (4·3·2 줄여 말하기, 매일).</li>`
+    + `<li><b>수업 시연을 매일</b> — 아침 45분 녹화, 토요일 90분 리허설, 1월엔 첫 주 수업을 통째로. 말하기 · 교실 영어 · 수업 설계를 한 번에 훈련한다.</li>`
+    + `<li><b>영어가 과제보다 먼저.</b> 과제는 ${esc(dLabel(S.set.asgStart))}부터 평일 도서관 날 1시간 30분–2시간 30분만, 주말엔 없음. Issues 12/10 · 문헌 리뷰 ${esc(dLabel(S.set.litTarget))} 제출 목표.</li>`
+    + `<li><b>가장 큰 자산은 Merrin 봉사</b> — ${md.length}일 · 약 ${Math.round(md.reduce((a, d) => a + (d === FIX.schoolLast ? 6.25 : 8), 0))}시간. SubTutor는 그날 못 알아들은 것을 회수하는 장치.</li>`
+    + `<li><b>버퍼는 꼭 할 일만</b> — 교사 등록 · 경력증명서처럼 미루면 부임이 막히는 일. 할 일이 없으면 영어 말하기.</li></ol></div>`;
+  h += `<div class="gh">단계</div><div class="group tw"><table class="t"><tr><th>단계</th><th>기간</th><th>영어 / 일 (평균)</th><th>중심</th></tr>${phases.map(p => `<tr class="${p.k === ph ? 'cur' : ''}"><td><b>${esc(p.name)}</b></td><td class="num">${esc(dLabel(p.from))}<br>– ${esc(dLabel(p.to))}</td><td class="num">${durText(Math.round(avgEng(p.from, p.to)))}</td><td>${esc(p.focus)}</td></tr>`).join('')}</table></div>`;
   h += `<div class="gh">4주마다 올리는 것</div><div class="group tw"><table class="t"><tr><th>구간</th><th>속도 사다리</th><th>1차 청취</th><th>4·3·2</th><th>자료 · 배분</th></tr>${LEVELS.slice(1).map(l => `<tr class="${l === L ? 'cur' : ''}"><td><b>${esc(l.name)}</b></td><td class="num">${esc(l.ladder)}</td><td>${esc(l.first)}</td><td>${esc(l.t432)}</td><td>${esc(l.mat)}<br><span class="muted">${esc(l.ratio)}</span></td></tr>`).join('')}</table></div>`;
   h += `<p class="muted small" style="margin:-6px 8px 10px">5주차(12/7~)에 대본 없는 실제 발화(뉴스 · 다큐 · 학교 소개 영상)를 넣는다. 시트콤은 또박또박 말하고 웃음 포인트에서 쉬어 주지만, 실제 교무실은 그렇지 않다.</p>`;
-  h += `<div class="gh">1월에 할 수 있어야 하는 것</div><div class="group txt"><ol><li>학생에게 활동을 설명하고, 이해했는지 확인하며 다시 설명하기</li><li>학생의 말을 듣고 핵심을 되물어 확인하기</li><li>동료의 업무 지시에서 무엇을 · 언제 · 누가 하는지 확인하기</li><li>회의에서 의견 → 이유 → 예시 → 제안을 60–90초로 말하기</li><li>5–10분 모의수업 중 예상 못 한 질문에 대응하기</li><li>1/28–29 학부모 면담에서 자기소개하고 아이의 강점 · 목표 묻기</li></ol></div>`;
+  h += `<div class="gh">1월에 할 수 있어야 하는 것</div><div class="group txt"><ol><li>학생에게 활동을 설명하고, 이해했는지 확인하며 다시 설명하기</li><li>학생의 말을 듣고 핵심을 되물어 확인하기</li><li>동료의 업무 지시에서 무엇을 · 언제 · 누가 하는지 확인하기</li><li>회의에서 의견 → 이유 → 예시 → 제안을 60–90초로 말하기</li><li>20분 수업을 영어로 끝까지 — 예상 못 한 질문에도 대응하기</li><li>1/28–29 학부모 면담에서 자기소개하고 아이의 강점 · 목표 묻기</li></ol></div>`;
   h += `<div class="gh">병목과 11주 안의 변화</div><div class="group tw"><table class="t"><tr><th>병목</th><th>증상</th><th>바뀌는가</th></tr>`
     + `<tr><td>NZ 모음 이동</td><td>pen→pin, fish→fush, back→beck, yes→yis</td><td>바뀐다 · 2–3주 집중</td></tr><tr><td>축약 · 연음</td><td>didja, gonna, have a bit of a look, d’you reckon</td><td>바뀐다 · 패턴 50개 남짓</td></tr><tr><td>말 속도</td><td>시트콤 180–220 wpm, 교무실 잡담은 더 빠름</td><td>부분적 · 익숙한 영역에서만</td></tr><tr><td>키위 · 학교 관용어</td><td>sweet as, chur, heaps, keen, yeah nah, morning tea, whānau, WALT</td><td>바뀐다 · 목록이 유한</td></tr><tr><td>다자 대화</td><td>겹쳐 말하기, 끼어들 지점을 못 찾음</td><td>가장 느림 · 현장 노출로만</td></tr></table></div>`;
-  h += `<div class="gh">현실적인 도착 지점</div><div class="group txt"><p>시트콤 · 학교 영역 청취 85%, 교실 · 교무실 고빈도 발화 250개 자동화, 짧은 회의 발언은 막힘 없이. 긴 논증을 즉석에서 펴는 능력은 11주로 안정되지 않는다 — 대신 첫 주에 버벅거리지 않는 상태는 확실히 만들 수 있다.</p></div>`;
-  h += `<div class="gh">흔한 실수 6가지</div><div class="group txt"><ol><li><b>이미 이해한 것을 또 듣는다</b> — 시간은 Q 표시한 줄에만.</li><li><b>자막을 켜고 1차 청취</b> — 그러면 읽기 연습. 1차는 반드시 무자막.</li><li><b>느린 배속에서 끝낸다</b> — 사다리는 반드시 1배 이상으로 끝.</li><li><b>입력만 쌓고 출력을 미룬다</b> — 말하기는 별개의 근육, 매일 최소 10분.</li><li><b>완벽한 문장을 기다린다</b> — 교무실에선 정확도보다 타이밍.</li><li><b>저장 문장 수 · 같은 영상 점수로 실력을 착각</b> — 매주 새 자료 · 새 상황으로 확인.</li></ol></div>`;
-  h += `<div class="gh">과제 전략</div><div class="group txt"><ul><li><b>주제를 인접하게</b> — 문헌이 겹치면 2편을 1.5편 노력으로. 내년에 실제로 쓸 주제면 부임에도 남는다: EAL · 다언어 학습자 지원, 또는 structured literacy 논쟁 (Issues 안내문 예시에도 있음).</li><li><b>발표 · 토론 = 말하기 훈련</b> — 원고 대신 키워드 + 입트기 4·3·2. 읽는 발표와 말하는 발표는 청중이 바로 안다.</li><li><b>AI 규정</b> — 주제 · 관점 탐색에만. 집필은 전부 본인, 출처는 원문 확인, 끝에 AI 사용 진술 (채점 안 함).</li></ul></div>`;
+  h += `<div class="gh">현실적인 도착 지점</div><div class="group txt"><p>시트콤 · 학교 영역 청취 85%, 교실 · 교무실 고빈도 발화 250개 자동화, 짧은 회의 발언은 막힘 없이, 20분 수업을 영어로 끝까지. 긴 논증을 즉석에서 펴는 능력은 11주로 안정되지 않는다 — 대신 첫 주에 버벅거리지 않는 상태는 확실히 만들 수 있다.</p></div>`;
+  h += `<div class="gh">흔한 실수 6가지</div><div class="group txt"><ol><li><b>이미 이해한 것을 또 듣는다</b> — 시간은 Q 표시한 줄에만.</li><li><b>자막을 켜고 1차 청취</b> — 그러면 읽기 연습. 1차는 반드시 무자막.</li><li><b>느린 배속에서 끝낸다</b> — 사다리는 반드시 1배 이상으로 끝.</li><li><b>입력만 쌓고 출력을 미룬다</b> — 말하기 · 시연은 별개의 근육, 매일.</li><li><b>완벽한 문장을 기다린다</b> — 교무실에선 정확도보다 타이밍.</li><li><b>저장 문장 수 · 같은 영상 점수로 실력을 착각</b> — 매주 새 자료 · 새 상황으로 확인.</li></ol></div>`;
+  h += `<div class="gh">과제 전략</div><div class="group txt"><ul><li><b>주제를 인접하게</b> — 문헌이 겹치면 2편을 1.5편 노력으로. 내년에 실제로 쓸 주제면 부임에도 남는다: EAL · 다언어 학습자 지원, 또는 structured literacy 논쟁 (Issues 안내문 예시에도 있음).</li><li><b>발표 · 토론 = 말하기 훈련</b> — 원고 대신 키워드 + 입트기 4·3·2.</li><li><b>AI 규정</b> — 주제 · 관점 탐색에만. 집필은 전부 본인, 출처는 원문 확인, 끝에 AI 사용 진술 (채점 안 함).</li></ul></div>`;
   return h;
 }
 function routineCard(title, where, r) {
@@ -1510,21 +1644,37 @@ function routineCard(title, where, r) {
 }
 function guideRoutine() {
   const L = levelOf(sel);
-  let h = `<div class="group txt"><b>${esc(L.name)}</b> · 사다리 ${esc(L.ladder)} · 4·3·2 ${esc(L.t432)} · 1차 청취 ${esc(L.first)}<br><span class="muted small">어떤 날이든 30분짜리는 반드시 한다 — 연속 일수가 끊기는 것이 하루 빠지는 것보다 훨씬 비싸다.</span></div>`;
-  h += routineCard('영어 60 · 표준', '화 · 방학 · 부임 준비', 'eng60');
-  h += routineCard('영어 45 · 수업 전 듣기', '월 · 목 도서관', 'pre45');
+  let h = `<div class="group txt"><b>${esc(L.name)}</b> · 사다리 ${esc(L.ladder)} · 4·3·2 ${esc(L.t432)} · 1차 청취 ${esc(L.first)}<br><span class="muted small">어떤 날이든 아침 영어는 반드시 한다 — 연속 일수가 끊기는 것이 하루 빠지는 것보다 훨씬 비싸다.</span></div>`;
+  h += routineCard('영어 60 · 표준', '매일 아침 5:30 (집)', 'eng60');
+  h += routineCard('영어 45 · 쉐도잉 · 소리 내어 읽기', '평일 7:15 · 일 5:30', 'shadow');
+  h += routineCard('영어 90 · 집중 듣기', '도서관 9:10 · 토 5:30 · 일 9:00', 'deep90');
+  h += routineCard('영어 · 말하기', '도서관 오후 스터디룸 · 일 7:00', 'speak');
+  h += routineCard('영어 90 · 읽기 · 표현 · 어휘', '과제 시작 전 · 일 10:40', 'read90');
+  h += routineCard('영어 · 고속 적응 · 받아쓰기', '과제 시작 전 오후', 'listen');
+  h += routineCard('영어 45 · 수업 전 듣기', '월 · 목 9:10', 'pre45');
+  h += routineCard('수업 회수 30', '월 · 목 12:30', 'unirec');
   h += routineCard('영어 저녁 30', '평일 20:00', 'eve30');
-  h += routineCard('출근 워밍업', '수 · 금 차 안', 'merwarm');
+  h += routineCard('오늘 쓸 문장 리허설', '봉사 날 6:30 (집)', 'merwarm');
   h += routineCard('Merrin 봉사 미션', '수 · 금 8–4', 'merrin');
   h += routineCard('봉사 회수 25', '귀가 직후', 'merrec');
-  h += routineCard('수업 회수 20', '월 · 목 점심 뒤', 'unirec');
-  h += routineCard('영어 실전 45', '방학 · 부임 준비', 'real45');
-  h += routineCard('주간 정리 90', '토 9:00', 'week90');
-  h += routineCard('주간 측정 20', '일 20:00', 'metric20');
+  h += routineCard('영어 60 · 주간 정리', '토 19:00', 'week60');
+  h += routineCard('주간 측정 30', '일 12:00 (도서관)', 'metric20');
+  h += `<p class="muted small" style="margin:-6px 8px 10px">수업 시연 루틴은 가이드 › 시연 탭에 있어요.</p>`;
   h += `<div class="gh">요일별 말하기 주제</div><div class="group tw"><table class="t"><tr><th>요일</th><th>학기 (봉사 날은 봉사 경험)</th><th>방학 · 부임 준비</th></tr>${[1, 2, 3, 4, 5, 6, 0].map(d => `<tr><td>${WD_KO[d]}</td><td>${esc(TOPICS[['retry', 'instr', 'explain', 'merrin', 'meeting', 'merrin', 'mock'][d]].name)}</td><td>${esc(TOPICS[['retry', 'instr', 'explain', 'parent', 'meeting', 'small', 'mock'][d]].name)}</td></tr>`).join('')}</table></div>`;
   h += `<div class="gh">프롬프트 모음 (입트기에 넣기)</div>`;
   for (const [k, T] of Object.entries(TOPICS)) h += `<details class="group"><summary class="row"><span><b>${esc(T.name)}</b> <span class="muted small">${esc(T.ko)}</span></span></summary>${T.p.map(p => `<div class="phr"><div class="p"><div>${esc(p)}</div></div><button data-copy="${esc(p)}" aria-label="복사">⧉</button></div>`).join('')}</details>`;
   h += `<div class="gh">SubTutor 단축키</div><div class="group dl"><dt><kbd>A</kbd> <kbd>D</kbd></dt><dd>이전 · 다음 줄</dd><dt><kbd>F</kbd></dt><dd>다시 듣기</dd><dt><kbd>S</kbd> · <kbd>X</kbd></dt><dd>같은 속도 반복 · 속도 사다리 반복</dd><dt><kbd>Q</kbd></dt><dd>못 알아들음 (빨간 별)</dd><dt><kbd>E</kbd> · Enter</dt><dd>저장</dd><dt><kbd>T</kbd> 누르고 있기</dt><dd>한국어 뜻</dd><dt><kbd>V</kbd></dt><dd>가린 자막 보기</dd><dt><kbd>W</kbd> · <kbd>R</kbd></dt><dd>따라하기 · 더빙</dd><dt><kbd>P</kbd></dt><dd>자동 멈춤</dd><dt><kbd>[</kbd> <kbd>]</kbd> <kbd>\\</kbd></dt><dd>속도 −0.1 · +0.1 · 원래대로</dd></div>`;
+  return h;
+}
+function guideDemo() {
+  const dl = demoLevel(sel), w = weekNo(sel);
+  let h = `<div class="group txt"><b>수업 시연</b> — 평일 아침 6:30 45분 (집 · 녹화) · 토 7:00 90분 주간 리허설 · 부임 준비 기간(${esc(dLabel(S.set.litTarget))}~)엔 도서관 90분 첫 주 리허설<br><span class="muted small">지금 단계: ${esc(dl.len)} · ${esc(dl.focus)}</span></div>`;
+  h += `<div class="gh">주차별 시연 길이</div><div class="group tw"><table class="t"><tr><th>주차</th><th>시연</th><th>중심</th></tr>${[['1–2주', 1, 2], ['3–4주', 3, 4], ['5–8주', 5, 8], ['9주부터', 9, 99]].map(([n, a, z]) => { const x = demoLevelW(a); return `<tr class="${(w >= a && w <= z) || (w === 0 && a === 1) ? 'cur' : ''}"><td>${n}</td><td class="num">${esc(x.len)}</td><td>${esc(x.focus)}</td></tr>`; }).join('')}</table></div>`;
+  h += `<div class="gh">20분 수업 흐름</div><div class="group txt small"><ol><li><b>도입 3분</b> — 훅 질문 · WALT · 성공 기준</li><li><b>I do 5분</b> — 모델링, 생각을 소리 내어</li><li><b>We do 5분</b> — 함께 한 문제, 짝과 확인</li><li><b>You do 5분</b> — 혼자 · 짝, 교사는 돌며 질문</li><li><b>마무리 2분</b> — 성공 기준으로 돌아보기</li></ol></div>`;
+  for (const sec of DEMO_FRAMES) h += `<div class="gh">${esc(sec.h)}</div><div class="group">${sec.items.map(([en, ko]) => phrRow(en, ko, true)).join('')}</div>`;
+  h += `<div class="gh">루브릭 — 매번 2개만 골라</div><div class="group txt small"><ol>${DEMO_RUBRIC.map(x => `<li>${esc(x)}</li>`).join('')}</ol></div>`;
+  h += `<div class="gh">주제 (Y5–6 · Y3–4 변형)</div><div class="group">${DEMO_TOPICS.map(d => `<div class="phr"><div class="p"><div>${esc(d.t)}</div><small>${esc(d.w)}</small>${d.y34 ? `<small>${esc(d.y34)}</small>` : ''}</div><button data-say="${esc(d.w)}" aria-label="듣기">🔊</button></div>`).join('')}</div>`;
+  h += `<div class="gh">녹화 요령</div><div class="group txt small"><ul><li>휴대폰은 학생 눈높이 · 2–3m 거리, 칠판 쓰는 동작까지 담기</li><li>처음 30초만 다시 봐도 효과가 크다 — 첫인상 · 목소리 · 속도</li><li>영상은 지우지 말고 토요일에 나란히 비교 → 나아진 점 한 줄</li><li>Claude ⑥에 수업 흐름을 말로 설명하고 “학생 역할로 질문해 줘”</li></ul></div>`;
   return h;
 }
 function phrRow(en, ko, say) { return `<div class="phr"><div class="p"><div>${esc(en)}</div>${ko ? `<small>${esc(ko)}</small>` : ''}</div>${say ? `<button data-say="${esc(en)}" aria-label="듣기">🔊</button>` : ''}</div>`; }
@@ -1568,9 +1718,9 @@ function guideMetrics() {
 }
 function openGuide(tab) {
   if (tab) guideTab = tab;
-  const tabs = [['plan', '계획'], ['routine', '루틴'], ['phrases', '표현'], ['claude', 'Claude'], ['metrics', '지표']];
+  const tabs = [['plan', '계획'], ['routine', '루틴'], ['demo', '시연'], ['phrases', '표현'], ['claude', 'Claude'], ['metrics', '지표']];
   const render = keep => {
-    const body = guideTab === 'plan' ? guidePlan() : guideTab === 'routine' ? guideRoutine() : guideTab === 'phrases' ? guidePhr() : guideTab === 'claude' ? guideClaude() : guideMetrics();
+    const body = guideTab === 'plan' ? guidePlan() : guideTab === 'routine' ? guideRoutine() : guideTab === 'demo' ? guideDemo() : guideTab === 'phrases' ? guidePhr() : guideTab === 'claude' ? guideClaude() : guideMetrics();
     const h = `<div class="sh-head"><span style="min-width:52px"></span><div class="ttl">가이드</div><button data-x class="b">완료</button></div><div class="sh-body"><div class="seg">${tabs.map(([k, l]) => `<button data-tab="${k}" class="${k === guideTab ? 'on' : ''}">${l}</button>`).join('')}</div>${body}</div>`;
     const fn = () => openSheet(h, { full: true, state: { kind: 'guide', refresh: () => render(true) }, mount: bindGuide });
     if (keep) keepScroll(fn); else fn();
@@ -1841,10 +1991,12 @@ window.addEventListener('focus', () => tick(true));
   applyTheme();
   renderAll();
   if (sel === today) scrollToNow(false); else scrollToMin(7 * 60);
+  if (S.notice) { const n = S.notice; delete S.notice; setTimeout(() => toast(n), 800); }
+  save();
   if (!S.seenHelp) {
     const hint = document.createElement('div');
     hint.className = 'hint';
-    hint.innerHTML = '<b>사용법</b><br>○ 동그라미 = 완료 (가로줄) · 블록 누르기 = 단계와 남은 시간<br>길게 눌러 끌기 = 시간 옮기기 · 위·아래 가장자리 = 길이<br>빈 곳 길게 누르기 = 새 블록 · 좌우로 밀기 = 다른 날<br><button>알겠어요</button>';
+    hint.innerHTML = '<b>사용법</b><br>○ 동그라미 = 완료 (가로줄) · 블록 누르기 = 단계와 남은 시간<br>길게 눌러 끌기 = 시간 옮기기 · 위·아래 가장자리 = 길이<br>빈 곳 길게 누르기 = 새 블록 · 좌우로 밀기 = 다른 날<br>분홍 버퍼 = 꼭 할 일 시간 (목록은 Inbox)<br><button>알겠어요</button>';
     scroller.appendChild(hint);
     hint.style.top = (scroller.scrollTop + 8) + 'px';
     hint.querySelector('button').onclick = () => { S.seenHelp = true; save(); hint.remove(); };

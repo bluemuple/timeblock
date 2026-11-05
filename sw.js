@@ -1,5 +1,5 @@
 // 오프라인에서도 열리도록: 네트워크 먼저, 안 되면 저장본
-const C = 'tb-v1';
+const C = 'tb-v2';
 const CORE = ['./', './index.html', './manifest.webmanifest', './apple-touch-icon.png', './icon-192.png', './favicon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(C).then(c => c.addAll(CORE)).catch(() => {})); self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
