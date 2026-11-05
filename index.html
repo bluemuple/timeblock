@@ -1,0 +1,1856 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="타임블록">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#F7F7F7">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>영어 타임블록</title>
+<style>
+:root{--tint:#FF3B30;--bg:#fff;--bar:#F7F7F7;--ink:#000;--ink2:#8A8A8E;--ink3:#C7C7CC;--line:#E2E2E7;--sep:rgba(60,60,67,.2);--sheet:#F2F2F7;--group:#fff;--fill:rgba(118,118,128,.12);--shadow:0 8px 28px rgba(0,0,0,.16);--H:60;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--tint:#FF453A;--bg:#000;--bar:#151517;--ink:#fff;--ink2:#98989F;--ink3:#4A4A4E;--line:#2A2A2D;--sep:rgba(84,84,88,.55);--sheet:#0B0B0C;--group:#1C1C1E;--fill:rgba(118,118,128,.26);--shadow:0 8px 28px rgba(0,0,0,.6);color-scheme:dark}}
+:root[data-theme="dark"]{--tint:#FF453A;--bg:#000;--bar:#151517;--ink:#fff;--ink2:#98989F;--ink3:#4A4A4E;--line:#2A2A2D;--sep:rgba(84,84,88,.55);--sheet:#0B0B0C;--group:#1C1C1E;--fill:rgba(118,118,128,.26);--shadow:0 8px 28px rgba(0,0,0,.6);color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:15px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overscroll-behavior:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;text-align:inherit}
+input,textarea,select{font:inherit;color:inherit}
+a{color:var(--tint)}
+kbd{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;padding:2px 5px;border-radius:4px;background:var(--fill);border:.5px solid var(--sep);vertical-align:1px}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;max-width:760px;margin:0 auto;background:var(--bg);overflow:hidden}
+@media (min-width:761px){#app{border-left:.5px solid var(--sep);border-right:.5px solid var(--sep)}}
+
+/* ── 위쪽: iOS 캘린더 일 보기 ── */
+#top{flex:none;background:var(--bar);padding-top:env(safe-area-inset-top);z-index:3;position:relative;border-bottom:.5px solid var(--sep)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:44px;padding:0 4px 0 2px}
+.back{display:flex;align-items:center;gap:4px;color:var(--tint);font-size:17px;padding:8px 8px 8px 6px;letter-spacing:-.2px}
+.back svg{width:12px;height:20px}
+.navIcons{display:flex;align-items:center}
+.navIcons button{width:44px;height:44px;display:grid;place-items:center;color:var(--tint)}
+.navIcons svg{width:23px;height:23px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);padding:0 4px 6px;touch-action:pan-y}
+.wc{display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}
+.wc .wd{font-size:11px;color:var(--ink2);height:14px;line-height:14px}
+.wc .dn{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:20px;font-variant-numeric:tabular-nums}
+.wc .dn.wk{color:var(--ink2)}
+.wc .dn.today{color:var(--tint)}
+.wc .dn.sel{background:var(--ink);color:var(--bg);font-weight:600}
+.wc .dn.sel.today{background:var(--tint);color:#fff}
+.dtitle{border-top:.5px solid var(--sep);text-align:center;padding:9px 10px 8px}
+.dtitle b{display:block;font-size:17px;font-weight:600;letter-spacing:-.2px}
+.dtitle small{display:block;font-size:12px;color:var(--ink2);margin-top:1px}
+.allday{display:flex;align-items:flex-start;gap:6px;padding:5px 8px 6px 0;border-top:.5px solid var(--sep);background:var(--bg)}
+.allday[hidden]{display:none}
+.adl{flex:none;width:56px;text-align:right;font-size:11px;color:var(--ink2);padding:4px 8px 0 0}
+.adw{flex:1;display:flex;flex-wrap:wrap;gap:4px;min-width:0;max-height:50px;overflow-y:auto}
+.ad{max-width:100%;font-size:12px;font-weight:500;padding:2px 7px 2px 6px;border-radius:4px;background:color-mix(in srgb,var(--c) 18%,var(--bg));color:color-mix(in srgb,var(--c) 60%,var(--ink));border-left:3px solid var(--c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+
+/* ── 시간 칸 ── */
+#scroller{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;z-index:1;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--bg)}
+#grid{position:relative;height:calc(24 * var(--H) * 1px);margin:14px 0 calc(104px + env(safe-area-inset-bottom));--lw:56px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#grid.inL{animation:inL .2s ease-out}#grid.inR{animation:inR .2s ease-out}
+@keyframes inL{from{transform:translateX(26px);opacity:.35}to{transform:none;opacity:1}}
+@keyframes inR{from{transform:translateX(-26px);opacity:.35}to{transform:none;opacity:1}}
+.hl{position:absolute;left:0;right:0;top:calc(var(--h) * var(--H) * 1px);height:0;pointer-events:none}
+.hl::after{content:'';position:absolute;left:var(--lw);right:0;top:0;border-top:.5px solid var(--line)}
+.hl span{position:absolute;right:calc(100% - var(--lw) + 8px);top:0;transform:translateY(-50%);font-size:12px;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums;transition:opacity .2s}
+.hl span small{font-size:10px;margin-left:1px}
+.hl.near span{opacity:0}
+.ev{position:absolute;top:calc(var(--s) * var(--H) * 1px / 60 + .5px);height:calc(var(--d) * var(--H) * 1px / 60 - 1.5px);left:calc(var(--lw) + 3px + (100% - var(--lw) - 7px) * var(--col) / var(--cols));width:calc((100% - var(--lw) - 7px) / var(--cols) - 2px);border-radius:5px;background:color-mix(in srgb,var(--c) 19%,var(--bg));overflow:hidden;padding:3px 6px 2px 26px;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:box-shadow .15s,opacity .2s}
+.ev::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3.5px;background:var(--c)}
+.ev.opt{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--c) 17%,var(--bg)) 0 7px,color-mix(in srgb,var(--c) 8%,var(--bg)) 7px 14px)}
+.ev .t{font-size:13px;font-weight:600;color:color-mix(in srgb,var(--c) 58%,var(--ink));line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:2px}
+.ev .t em{font-style:normal;font-weight:500;font-size:11px;opacity:.8}
+.ev .tm{font-size:12px;color:color-mix(in srgb,var(--c) 68%,var(--ink));line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;display:flex;align-items:center;gap:3px}
+.ev .tm svg{width:11px;height:11px;flex:none}
+.ev .ck{position:absolute;left:7px;top:4px;width:15px;height:15px;border-radius:50%;border:1.5px solid color-mix(in srgb,var(--c) 75%,var(--ink));background:var(--bg)}
+.ev .ck::after{content:'';position:absolute;inset:-10px -8px -10px -8px}
+.ev.done .ck{background:var(--c);border-color:var(--c)}
+.ev.done .ck::before{content:'';position:absolute;left:3.6px;top:.6px;width:3.6px;height:7.5px;border:solid var(--on);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.ev.done .t,.ev.done .tm{text-decoration:line-through;text-decoration-thickness:1.5px}
+.ev.done{opacity:.55}
+.ev.m{padding-top:2px}.ev.m .tx{display:flex;align-items:baseline;gap:6px;min-width:0}.ev.m .t{flex:0 1 auto;min-width:0}.ev.m .tm{margin:0;flex:0 10 auto;min-width:0}
+.ev.m .ck{top:3px}
+.ev.s{padding:0 6px 0 22px;display:flex;align-items:center}.ev.s .tm{display:none}.ev.s .t{font-size:11px}
+.ev.s .ck{width:11px;height:11px;left:6px;top:50%;margin-top:-5.5px;border-width:1.2px}
+.ev.s.done .ck::before{left:2.4px;top:.2px;width:2.8px;height:5.6px;border-width:0 1.6px 1.6px 0}
+.ev .left{display:none}
+.ev.now{box-shadow:inset 0 0 0 1.5px var(--c)}
+.ev.now .left{display:block;position:absolute;right:4px;top:3px;background:var(--c);color:var(--on);font-size:11px;font-weight:700;padding:1px 6px;border-radius:8px;font-variant-numeric:tabular-nums;line-height:1.35}
+.ev.now .tx{padding-right:72px}.ev.s.now .tx{padding-right:60px}
+.ev.s.now .left{top:50%;transform:translateY(-50%);font-size:10px;padding:0 5px}
+.ev .sub{position:absolute;left:24px;right:6px;top:calc(var(--o) * var(--H) * 1px / 60);font-size:11px;color:color-mix(in srgb,var(--c) 68%,var(--ink));border-top:1px dashed color-mix(in srgb,var(--c) 45%,transparent);padding-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.ev.lift{z-index:6;box-shadow:var(--shadow),inset 0 0 0 1.5px var(--c);opacity:.97;transition:none}
+.ev.lift .hd{display:block}
+.ev .hd{display:none;position:absolute;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2px solid var(--c)}
+.ev .hd.a{top:2px;right:12px}.ev .hd.b{bottom:2px;left:30px}
+#nowLine{position:absolute;left:0;right:0;top:calc(var(--m) * var(--H) * 1px / 60);height:0;z-index:5;pointer-events:none}
+#nowLine[hidden]{display:none}
+#nowLine .cap{position:absolute;right:calc(100% - var(--lw) + 3px);top:0;transform:translateY(-50%);background:var(--tint);color:#fff;font-size:12.5px;font-weight:700;padding:2px 6px;border-radius:9px;font-variant-numeric:tabular-nums;line-height:1.25;white-space:nowrap}
+#nowLine i{position:absolute;left:calc(var(--lw) - 4px);right:0;top:-1px;height:2px;background:var(--tint)}
+
+/* ── 지금 카드 ── */
+#nowCard{position:absolute;left:10px;right:10px;bottom:calc(52px + env(safe-area-inset-bottom));z-index:4;background:color-mix(in srgb,var(--bar) 86%,transparent);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,.14);padding:9px 12px 12px;display:flex;align-items:center;gap:10px;overflow:hidden;cursor:pointer;transition:opacity .2s,transform .2s;border:.5px solid var(--sep)}
+#app.dragging #nowCard{opacity:0;transform:translateY(10px);pointer-events:none}
+#nowCard .dot{flex:none;width:10px;height:10px;border-radius:50%}
+#nowCard .nc-m{flex:1;min-width:0}
+#nowCard .nc-t{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#nowCard .nc-n{font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#nowCard .nc-r{flex:none;text-align:right;line-height:1.1}
+#nowCard .nc-r b{display:block;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+#nowCard .nc-r small{font-size:11px;color:var(--ink2)}
+#nowCard .nc-bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--fill)}
+#nowCard .nc-bar i{display:block;height:100%;background:var(--c,var(--tint))}
+#nowCard .nc-back{color:var(--tint);font-weight:600;font-size:15px}
+
+/* ── 아래 도구 막대 ── */
+#toolbar{flex:none;display:flex;justify-content:space-between;align-items:center;padding:10px 18px calc(10px + env(safe-area-inset-bottom));background:var(--bar);border-top:.5px solid var(--sep);z-index:3}
+#toolbar button{color:var(--tint);font-size:17px;position:relative;padding:2px 4px}
+.badge{position:absolute;top:-7px;right:-12px;min-width:18px;height:18px;border-radius:9px;background:var(--tint);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 5px}
+.badge:empty{display:none}
+
+/* ── 시트 (iOS 시트 모양) ── */
+#layer{position:fixed;inset:0;z-index:20;pointer-events:none}
+#layer .dim{position:absolute;inset:0;background:rgba(0,0,0,.3);opacity:0;transition:opacity .25s;pointer-events:auto}
+#layer .sheet{position:absolute;left:0;right:0;bottom:0;max-width:760px;margin:0 auto;max-height:calc(100% - 34px - env(safe-area-inset-top));background:var(--sheet);border-radius:13px 13px 0 0;transform:translateY(104%);transition:transform .34s cubic-bezier(.2,.85,.25,1);display:flex;flex-direction:column;pointer-events:auto;box-shadow:0 -2px 22px rgba(0,0,0,.18)}
+#layer .sheet.full{height:calc(100% - 34px - env(safe-area-inset-top))}
+#layer.open .dim{opacity:1}#layer.open .sheet{transform:none}
+.sh-grab{flex:none;width:36px;height:5px;border-radius:3px;background:var(--ink3);margin:6px auto 0}
+.sh-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 14px 8px}
+.sh-head .ttl{font-weight:600;font-size:17px;text-align:center;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-head button{color:var(--tint);font-size:17px;min-width:52px}
+.sh-head button.b{font-weight:600;text-align:right}
+.sh-body{overflow-y:auto;padding:2px 16px calc(28px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.group{background:var(--group);border-radius:11px;margin:0 0 14px;overflow:hidden}
+.gh{font-size:13px;color:var(--ink2);margin:18px 6px 7px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.gh:first-child{margin-top:6px}
+.gh b{color:var(--ink);font-weight:600}
+.row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:.5px solid var(--sep);min-height:44px}
+.row:last-child{border-bottom:0}
+.row>span:first-child{flex:1}
+.row input[type=time],.row input[type=date],.row select{background:var(--fill);border:0;border-radius:7px;padding:6px 8px;min-width:0}
+.row input[type=range]{flex:1}
+.inp{display:block;width:100%;border:0;background:transparent;padding:12px 14px;outline:none;resize:vertical}
+.muted{color:var(--ink2)}
+.small{font-size:13px}
+.txt{padding:12px 14px;font-size:14px;line-height:1.55}
+.txt p{margin:0 0 8px}.txt p:last-child{margin:0}
+.txt ul,.txt ol{margin:0;padding-left:20px}.txt li{margin:3px 0}
+.txt li>small:first-child{margin-right:5px;color:var(--ink2);font-weight:600;font-variant-numeric:tabular-nums}
+.chk{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;border-bottom:.5px solid var(--sep);cursor:pointer;font-size:14.5px;line-height:1.45}
+.chk:last-child{border-bottom:0}
+.chk .bx{flex:none;width:22px;height:22px;border-radius:50%;border:1.6px solid var(--ink3);margin-top:-1px;position:relative;transition:background .15s}
+.chk.on .bx{background:var(--c,var(--tint));border-color:var(--c,var(--tint))}
+.chk.on .bx::after{content:'';position:absolute;left:6.6px;top:2.6px;width:5px;height:10px;border:solid #fff;border-width:0 2.2px 2.2px 0;transform:rotate(45deg)}
+.chk.on .lbl{text-decoration:line-through;color:var(--ink2)}
+.chk .lbl small{color:var(--ink2);font-weight:600;margin-right:4px;font-variant-numeric:tabular-nums}
+.btn{display:block;width:100%;padding:12px 14px;text-align:center;color:var(--tint);font-size:16px;border-bottom:.5px solid var(--sep)}
+.btn:last-child{border-bottom:0}
+.btn.danger{color:var(--tint)}
+.btn.l{text-align:left}
+.pills{display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px}
+.pill{padding:7px 12px;border-radius:16px;background:var(--fill);font-size:14px;font-weight:500}
+.pill.tint{background:var(--tint);color:#fff}
+a.pill{color:var(--ink);text-decoration:none}
+.dt-top{display:flex;gap:12px;align-items:flex-start;padding:2px 4px 6px}
+.dt-top .bigck{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--c);margin-top:3px;position:relative;background:var(--bg)}
+.dt-top .bigck.on{background:var(--c)}
+.dt-top .bigck.on::after{content:'';position:absolute;left:8.4px;top:3.6px;width:6.5px;height:13px;border:solid var(--on);border-width:0 2.6px 2.6px 0;transform:rotate(45deg)}
+.dt-top h2{margin:0;font-size:22px;line-height:1.25;letter-spacing:-.3px}
+.dt-top h2.strike{text-decoration:line-through;color:var(--ink2)}
+.dt-meta{font-size:14px;color:var(--ink2);margin-top:4px}
+.dt-meta i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
+.dt-now{padding:12px 14px}
+.dt-now .r{display:flex;justify-content:space-between;align-items:baseline}
+.dt-now b{font-size:26px;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+.prog{height:6px;border-radius:3px;background:var(--fill);overflow:hidden;margin-top:8px}
+.prog i{display:block;height:100%;background:var(--c,var(--tint));border-radius:3px}
+.pcard{padding:12px 14px}
+.pcard .en{font-size:16px;line-height:1.45;font-weight:500}
+.pcard .ko{font-size:13px;color:var(--ink2);margin-top:4px}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.acts button,.acts a{font-size:13px;padding:6px 11px;border-radius:14px;background:var(--fill);color:var(--ink);text-decoration:none}
+.phr{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:.5px solid var(--sep)}
+.phr:last-child{border-bottom:0}
+.phr .p{flex:1;min-width:0}
+.phr .p div{font-size:15px;line-height:1.4}
+.phr .p small{display:block;font-size:12.5px;color:var(--ink2);margin-top:1px}
+.phr button{flex:none;width:34px;height:34px;border-radius:17px;background:var(--fill);display:grid;place-items:center;font-size:15px}
+.dl{display:grid;grid-template-columns:minmax(96px,auto) 1fr;gap:6px 12px;padding:12px 14px;font-size:14px}
+.dl dt{font-weight:600}.dl dd{margin:0;color:var(--ink2)}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th,table.t td{padding:8px 10px;border-bottom:.5px solid var(--sep);text-align:left;vertical-align:top}
+table.t th{color:var(--ink2);font-weight:600;font-size:12px;background:color-mix(in srgb,var(--fill) 50%,transparent)}
+table.t tr:last-child td{border-bottom:0}
+table.t tr.cur td{background:color-mix(in srgb,var(--tint) 9%,transparent)}
+table.t td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tw{overflow-x:auto}
+.seg{display:flex;background:var(--fill);border-radius:9px;padding:2px;margin:0 0 12px;position:sticky;top:0;z-index:2}
+.seg button{flex:1;padding:6px 0;border-radius:7px;font-size:13px;font-weight:500;text-align:center;white-space:nowrap}
+.seg button.on{background:var(--group);box-shadow:0 1px 3px rgba(0,0,0,.14);font-weight:600}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--sep)}
+.stat div{background:var(--group);padding:10px 8px;text-align:center}
+.stat b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.stat small{font-size:11.5px;color:var(--ink2)}
+.bars{padding:10px 14px}
+.bars .br{display:grid;grid-template-columns:74px 1fr 64px;align-items:center;gap:8px;font-size:13px;margin:5px 0}
+.bars .br span:last-child{text-align:right;color:var(--ink2);font-variant-numeric:tabular-nums}
+.bars .tr{height:9px;border-radius:5px;background:var(--fill);overflow:hidden}
+.bars .tr i{display:block;height:100%;border-radius:5px}
+.cal-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:.5px solid var(--sep);cursor:pointer}
+.cal-row:last-child{border-bottom:0}
+.cal-row .cc{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--c);position:relative}
+.cal-row.on .cc{background:var(--c)}
+.cal-row.on .cc::after{content:'';position:absolute;left:5.6px;top:1.8px;width:4.6px;height:9.5px;border:solid #fff;border-width:0 2.2px 2.2px 0;transform:rotate(45deg)}
+.cal-row span{flex:1}
+.catpick{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px}
+.cp{display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:15px;background:var(--fill);font-size:14px}
+.cp i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.cp.on{background:color-mix(in srgb,var(--c) 26%,var(--group));font-weight:600;box-shadow:inset 0 0 0 1.5px var(--c)}
+.rep{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px}
+.rep button{padding:6px 11px;border-radius:15px;background:var(--fill);font-size:14px}
+.rep button.on{background:var(--tint);color:#fff}
+.dl-row{display:flex;gap:12px;align-items:center;padding:12px 14px;border-bottom:.5px solid var(--sep)}
+.dl-row:last-child{border-bottom:0}
+.dl-row .dd{flex:none;min-width:62px;text-align:center;border-radius:9px;padding:6px 4px;background:color-mix(in srgb,var(--c,var(--tint)) 15%,var(--group));color:color-mix(in srgb,var(--c,var(--tint)) 70%,var(--ink))}
+.dl-row .dd b{display:block;font-size:17px;font-variant-numeric:tabular-nums}
+.dl-row .dd small{font-size:11px}
+.dl-row .ii{flex:1;min-width:0;font-size:14px}
+.dl-row .ii small{display:block;color:var(--ink2);font-size:12.5px;margin-top:2px}
+.mform{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 14px}
+.mform label{font-size:12.5px;color:var(--ink2);display:flex;flex-direction:column;gap:4px}
+.mform input{border:0;background:var(--fill);border-radius:8px;padding:8px 10px;font-size:16px;color:var(--ink);width:100%}
+.spark{display:block}
+.ok{color:#34C759;font-weight:700}
+.copybox{width:100%;min-height:120px;border:0;background:var(--fill);border-radius:8px;padding:10px;font:12px/1.4 ui-monospace,Menlo,monospace;color:var(--ink)}
+
+/* ── 액션 시트 · 토스트 · 전체 화면 ── */
+.as-wrap{position:fixed;inset:0;z-index:30}
+.as-dim{position:absolute;inset:0;background:rgba(0,0,0,.3);opacity:0;transition:opacity .2s}
+.as{position:absolute;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));max-width:520px;margin:0 auto;transform:translateY(120%);transition:transform .28s cubic-bezier(.2,.85,.25,1)}
+.as-wrap.open .as-dim{opacity:1}.as-wrap.open .as{transform:none}
+.as-g{background:color-mix(in srgb,var(--group) 94%,transparent);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-radius:14px;overflow:hidden;margin-bottom:8px}
+.as-t{padding:13px 16px;font-size:13px;color:var(--ink2);text-align:center;border-bottom:.5px solid var(--sep)}
+.as button{display:block;width:100%;padding:16px;font-size:18px;color:#0A84FF;text-align:center;border-bottom:.5px solid var(--sep)}
+.as-g button:last-child{border-bottom:0}
+.as button.danger{color:var(--tint)}
+.as .as-c{background:var(--group);border-radius:14px;font-weight:600;border:0}
+#toast{position:fixed;left:50%;bottom:calc(128px + env(safe-area-inset-bottom));transform:translate(-50%,16px);background:rgba(28,28,30,.94);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;z-index:40;display:flex;gap:14px;align-items:center;max-width:calc(100% - 32px)}
+#toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+#toast button{color:#FFD60A;font-weight:700;white-space:nowrap}
+.full-ov{position:fixed;inset:0;z-index:15;background:var(--bg);display:flex;flex-direction:column;max-width:760px;margin:0 auto;animation:fade .18s ease-out}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.fo-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(6px + env(safe-area-inset-top)) 8px 6px 2px;background:var(--bar);border-bottom:.5px solid var(--sep)}
+.fo-head button{color:var(--tint);font-size:17px;padding:8px}
+.fo-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.mo{padding:8px 6px 18px}
+.mo h3{margin:10px 10px 6px;font-size:22px;letter-spacing:-.3px}
+.mo h3.cur{color:var(--tint)}
+.mg{display:grid;grid-template-columns:repeat(7,1fr);text-align:center}
+.mg .wh{font-size:11px;color:var(--ink2);padding:4px 0}
+.mg button{padding:6px 0 4px;border-top:.5px solid var(--sep);display:flex;flex-direction:column;align-items:center;gap:3px;min-height:56px}
+.mg button .n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:17px;font-variant-numeric:tabular-nums}
+.mg button.wk .n{color:var(--ink2)}
+.mg button.today .n{background:var(--tint);color:#fff;font-weight:600}
+.mg button.sel:not(.today) .n{background:var(--ink);color:var(--bg)}
+.mg button .dots{display:flex;gap:3px;height:6px}
+.mg button .dots i{width:6px;height:6px;border-radius:50%}
+.mg .pad{border-top:.5px solid transparent}
+.legend{display:flex;flex-wrap:wrap;gap:12px;padding:8px 16px calc(16px + env(safe-area-inset-bottom));font-size:12px;color:var(--ink2)}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.srch{flex:1;display:flex;align-items:center;gap:6px;background:var(--fill);border-radius:10px;padding:7px 10px;margin-left:8px}
+.srch input{flex:1;border:0;background:transparent;outline:none;font-size:16px;min-width:0}
+.sr{display:flex;gap:10px;padding:10px 16px;border-bottom:.5px solid var(--sep);align-items:center;cursor:pointer}
+.sr i{flex:none;width:4px;align-self:stretch;border-radius:2px;background:var(--c)}
+.sr div{flex:1;min-width:0}.sr b{display:block;font-weight:500;font-size:15px}.sr small{color:var(--ink2);font-size:12.5px}
+.sr-h{padding:14px 16px 4px;font-size:13px;color:var(--ink2);font-weight:600}
+.hint{position:absolute;left:12px;right:12px;top:8px;z-index:7;background:var(--group);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;font-size:13.5px;line-height:1.55;border:.5px solid var(--sep)}
+.hint b{font-size:14.5px}
+.hint button{margin-top:8px;color:var(--tint);font-weight:600}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<noscript><p style="padding:20px">이 페이지는 자바스크립트가 필요해요.</p></noscript>
+<div id="app">
+  <header id="top">
+    <div class="nav">
+      <button class="back" id="btnMonth" aria-label="달 보기"><svg viewBox="0 0 12 20" aria-hidden="true"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="monthLabel"></span></button>
+      <div class="navIcons">
+        <button id="btnGuide" aria-label="가이드"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="3.2"/><path d="M8.5 9.5h8M8.5 12h8M8.5 14.5h5"/><circle cx="6.1" cy="9.5" r=".5" fill="currentColor"/><circle cx="6.1" cy="12" r=".5" fill="currentColor"/><circle cx="6.1" cy="14.5" r=".5" fill="currentColor"/></svg></button>
+        <button id="btnSearch" aria-label="검색"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.6 15.6 4.9 4.9"/></svg></button>
+        <button id="btnAdd" aria-label="새 블록"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 4.5v15M4.5 12h15"/></svg></button>
+      </div>
+    </div>
+    <div class="week" id="week"></div>
+    <div class="dtitle"><b id="dTitle"></b><small id="dSub"></small></div>
+    <div class="allday" id="allday" hidden></div>
+  </header>
+  <main id="scroller"><div id="grid"></div></main>
+  <div id="nowCard" role="button" tabindex="0"></div>
+  <nav id="toolbar">
+    <button id="btnToday"></button>
+    <button id="btnCals"></button>
+    <button id="btnInbox"><span id="inboxLabel"></span><span class="badge" id="inboxBadge"></span></button>
+  </nav>
+</div>
+<div id="layer"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+/* ═════════ 1. 도구 ═════════ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const pad = n => String(n).padStart(2, '0');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parseYMD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = parseYMD(s); d.setDate(d.getDate() + n); return ymd(d); };
+const dow = s => parseYMD(s).getDay();
+const daysBetween = (a, b) => Math.round((parseYMD(b) - parseYMD(a)) / 864e5);
+const toMin = hm => { const [h, m] = String(hm).split(':').map(Number); return h * 60 + (m || 0); };
+const fromMin = m => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+const hhmm = m => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const WD_KO = ['일', '월', '화', '수', '목', '금', '토'];
+const dLabel = s => { const d = parseYMD(s); return `${d.getMonth() + 1}/${d.getDate()} (${WD_KO[d.getDay()]})`; };
+const nowF = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60; };
+const nowI = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
+const durText = m => { const h = Math.floor(m / 60), r = Math.round(m % 60); return h ? (r ? `${h}시간 ${r}분` : `${h}시간`) : `${r}분`; };
+const atDate = s => { const [d, t] = s.split('T'); const x = parseYMD(d); const [h, m] = t.split(':').map(Number); x.setHours(h, m, 0, 0); return x; };
+
+/* ═════════ 2. 확인한 날짜와 내용 (2026-11-05 기준) ═════════ */
+// iOS 캘린더 색
+const CATS = {
+  eng: { name: '영어', c: '#FF9500', on: '#fff' },
+  asg: { name: '과제·준비', c: '#1BADF8', on: '#fff' },
+  uni: { name: '대학 수업', c: '#CC73E1', on: '#fff' },
+  mer: { name: 'Merrin', c: '#63DA38', on: '#fff' },
+  fam: { name: '가족', c: '#FFCC00', on: '#3A2F00' },
+  move: { name: '이동', c: '#A2845E', on: '#fff' },
+  rest: { name: '휴식·수면', c: '#8E8E93', on: '#fff' },
+  due: { name: '마감·휴일', c: '#FF2968', on: '#fff' },
+};
+// TEPI615-26X(C): 2026-11-09 ~ 2027-01-17, Workshop A 월 10–12 (11/16 온라인), Workshop B 목 10–12, 11/9–12/20
+const FIX = { planStart: '2026-11-05', course1: '2026-11-09', monLast: '2026-12-14', thuFirst: '2026-11-12', thuLast: '2026-12-17', online: { '2026-11-16': 1 }, schoolLast: '2026-12-15', planEnd: '2027-01-31' };
+const HOLI = {
+  '2026-11-13': 'Show Day (캔터베리 기념일) · 휴교',
+  '2026-12-25': 'Christmas Day', '2026-12-26': 'Boxing Day', '2026-12-28': 'Boxing Day 대체 휴일',
+  '2027-01-01': "New Year's Day", '2027-01-02': "Day after New Year's Day", '2027-01-04': "Day after New Year's 대체 휴일",
+};
+const LIGHT = new Set(['2026-11-13', '2026-12-24', '2026-12-25', '2026-12-26', '2026-12-27', '2026-12-28', '2026-12-31', '2027-01-01', '2027-01-02', '2027-01-03', '2027-01-04']);
+const LIGHT_NAME = { '2026-12-24': '크리스마스 이브', '2026-12-27': '연휴', '2026-12-31': '새해 전날', '2027-01-03': '연휴' };
+const DEADLINES = [
+  { id: 'iss', t: 'Educational issues essay', short: 'Issues essay (40%)', w: '40%', at: '2026-12-14T23:59', note: '1,500단어 ±10% · 참고문헌 5편 이상 · 150단어 초록 Learn 게시 · 마감 전 수업 발표', c: 'due' },
+  { id: 'lr1', t: '문헌 리뷰 + 핸드아웃 · 조기 제출', short: '조기 제출 · 문헌 리뷰 + 핸드아웃', w: '50% + 10%', at: '2027-01-11T09:00', note: '이 날을 목표로 잡으면 1/11부터 영어·부임 준비에 전념', c: 'due' },
+  { id: 'lr2', t: '문헌 리뷰 + 핸드아웃 · 최종 마감', short: '최종 · 문헌 리뷰 50% + 핸드아웃 10%', w: '50% + 10%', at: '2027-01-17T23:59', note: '3,000단어 ±10% · 참고문헌 8–12편 · 핸드아웃 1–2쪽 · 동료 토론 진행', c: 'due' },
+];
+const MILE = [
+  { d: '2026-11-09', t: 'TEPI615 수업 시작 · 월·목 10–12', cat: 'uni' },
+  { d: '2026-11-16', t: '오늘 수업은 온라인', cat: 'uni' },
+  { d: '2026-11-22', t: '목표 · Issues 초안 1,500단어', cat: 'asg' },
+  { d: '2026-12-10', t: '목표 · Issues 제출 (마감 12/14)', cat: 'asg' },
+  { d: '2026-12-17', t: 'TEPI615 마지막 수업', cat: 'uni' },
+  { d: '2027-01-10', t: '목표 · 문헌 리뷰 + 핸드아웃 완성', cat: 'asg' },
+];
+// Merrin School 공개 달력·학기 안내 (merrin.school.nz, 2026-11-05 확인)
+const SCHOOL = [
+  { d: '2026-11-18', to: '2026-11-20', t: 'Merrin: Project Jonah 고래 체험' },
+  { d: '2026-11-23', to: '2026-11-27', t: 'Merrin: Y8 leavers dance 연습', mo: 1, sub: [[540, 'Y8 leavers dance 연습 (~9:45)']] },
+  { d: '2026-11-27', t: 'Merrin: Year 1–2 Athletics Day', mo: 1, sub: [[685, 'Y1–2 Athletics Day (~3:00)']] },
+  { d: '2026-12-02', to: '2026-12-04', t: 'Merrin: Y5/6 캠프 — Waipara' },
+  { d: '2026-12-07', to: '2026-12-11', t: 'Merrin: Y8 Star Week', mo: 1 },
+  { d: '2026-12-11', t: 'Merrin: Y5/6 End of Year Assembly 9:15', sub: [[555, 'Y5/6 End of Year Assembly (~10:15)']] },
+  { d: '2026-12-15', t: 'Merrin: 학년 마지막 날 · 2시 하교', sub: [[540, 'Monster Music Concert (~10:00)'], [840, '하교 — 한 해 끝']] },
+  { d: '2027-01-25', t: '교사 출근 시작일 확인하기' },
+  { d: '2027-01-26', t: 'Merrin: 학교 사무실 오픈 (10am)' },
+  { d: '2027-01-28', to: '2027-01-29', t: 'Merrin: Kanohi ki te kanohi 학부모 면담' },
+  { d: '2027-02-01', t: 'Merrin: Term 1 개학' },
+];
+const CAMP = ['2026-12-02', '2026-12-04'];
+const REQ = {
+  I: 'Issues essay: 1,500단어 ±10% · 질문 + 관점 2개 이상 + 내 입장 · 참고문헌 5편 이상 (APA 7) · 150단어 초록 Learn 게시 · 마감 전 수업에서 발표 · 마감 12/14(월) 23:59',
+  L: '문헌 리뷰: 3,000단어 ±10% · 질문 → 비판적 종합 → 한계·전제 → 답 → 실천 시사점 · 참고문헌 8–12편 (대부분 최근 20년 원저 논문) · 핸드아웃 1–2쪽 · 동료 토론 진행 · 1/11 9:00 조기 / 1/17 23:59 최종',
+};
+const ASG_PLAN = [
+  { from: '2026-11-05', to: '2026-11-08', a: 'IL', t: '두 과제 주제 정하기', steps: ['두 과제를 인접한 주제로 (예: EAL·다언어 학습자 지원 / structured literacy)', 'Issues: 공적 논쟁이 되는 질문 후보 3개 (Should …? / What are the consequences of …?)', '문헌 리뷰: 초임 교사로서 궁금한 질문 후보 3개', 'UC 도서관 검색어 정리 (ERIC · A+ Education · NZCER)'] },
+  { from: '2026-11-09', to: '2026-11-15', a: 'I', t: 'Issues 자료 읽기', steps: ['질문 확정 (수업에서 한 번 확인)', '관점 2개 이상 — 자료 6–8편 읽고 메모', '자료마다 출처 유형 표시: 연구 · 전문가 의견 · 정책 · 언론 · 학부모', '문헌 리뷰용 논문은 목록만 따로'] },
+  { from: '2026-11-16', to: '2026-11-22', a: 'I', t: 'Issues 초안', steps: ['개요: 질문 → 관점 A → 관점 B → 내 입장 → 결론', '하루 300단어 × 5일 = 1,500단어', '150단어 초록 → Learn에 게시', 'AI 사용 메모 이어 쓰기 (진술문용)'] },
+  { from: '2026-11-23', to: '2026-11-29', a: 'IL', t: 'Issues 수정 · 발표 준비', steps: ['초안 다시 읽고 논증 보강 — 두 관점이 정말 다른 관점인지', '발표: 원고 대신 키워드 3개 + 입트기 4·3·2로 연습', '문헌 리뷰: 논문 4–6편 읽기 → 종합표(matrix) 시작'] },
+  { from: '2026-11-30', to: '2026-12-06', a: 'IL', t: 'Issues 발표 · 문헌 리뷰 자료', steps: ['수업 발표 → 동료 피드백 메모', 'APA 7 점검 · AI 사용 진술', '문헌 리뷰: 8–12편 확보 (대부분 최근 20년 원저 논문)', '종합표 완성: 주제별로 묶기'] },
+  { from: '2026-12-07', to: '2026-12-14', a: 'IL', t: 'Issues 제출 · 문헌 리뷰 개요', steps: ['Issues 최종 점검 → 12/10까지 제출 (마감 12/14 23:59)', '문헌 리뷰 개요: 서론(이유·질문) → 주제별 종합 → 한계·전제 → 답 → 실천 시사점'] },
+  { from: '2026-12-15', to: '2026-12-20', a: 'L', t: '문헌 리뷰 서론 + 종합 ①', steps: ['서론: 주제를 고른 이유와 질문', '종합 ①: 첫 번째 주제 묶음 — 연구끼리 비교'] },
+  { from: '2026-12-21', to: '2026-12-27', a: 'L', t: '문헌 리뷰 종합 ②', steps: ['종합 ②: 비교·대조 — 요약 나열 금지', '연구의 한계·전제를 본문에 녹이기', '성탄 주는 가볍게'] },
+  { from: '2026-12-28', to: '2027-01-03', a: 'L', t: '문헌 리뷰 종합 ③ · 질문에 답', steps: ['처음 질문에 분명히 답하기', '2,000단어 넘었는지 확인', '연말연시는 가볍게'] },
+  { from: '2027-01-04', to: '2027-01-10', a: 'L', t: '문헌 리뷰 시사점 · 수정 · 핸드아웃', steps: ['실천 시사점 / 나의 배움 섹션', '전체 수정 → 3,000단어 ±10%', '핸드아웃 1–2쪽 (동료 토론 질문 포함)', 'APA 7 · AI 사용 진술'] },
+  { from: '2027-01-11', to: '2027-01-17', a: 'L', t: '제출', steps: ['1/11(월) 9:00 조기 제출', '못 했으면 1/17(일) 23:59 최종 마감'] },
+];
+const LEVELS = [
+  { from: 0, to: 0, name: '준비 주', ladder: '0.8 → 1.0', t432: '75 → 60 → 45초', first: '자막 없이 1회', ratio: '기초 측정', mat: 'Educators', focus: '기초 측정 · 과제 주제 · 루틴 한 번씩 돌려 보기' },
+  { from: 1, to: 4, name: '1–4주', ladder: '0.8 → 1.0', t432: '75 → 60 → 45초', first: '자막 없이 1회', ratio: '듣기 45 · 말하기 40 · 어휘 15', mat: 'Educators 위주', focus: '교실 지시 · 도움 요청 · 되묻기 — 짧은 대사의 소리와 뜻 연결' },
+  { from: 5, to: 8, name: '5–8주', ladder: '0.9 → 1.15', t432: '60 → 45 → 30초', first: '자막 없이 2회', ratio: '듣기 40 · 말하기 50 · 어휘 10', mat: 'Educators + TVNZ+ 뉴스·다큐 (대본 없는 말)', focus: '동료와 계획 · 학생 상황 설명 · 회의 의견 · 학부모 대화' },
+  { from: 9, to: 11, name: '9–11주', ladder: '1.0 → 1.25', t432: '30초 고정 · 실제 상황 프롬프트', first: '자막 없이 1회로 판정', ratio: '듣기 35 · 말하기 55 · 어휘 10', mat: '다큐·실제 인터뷰 > 시트콤', focus: '무자막 듣기 · 즉답 · 끼어드는 질문에 대응' },
+  { from: 12, to: 99, name: '부임 주', ladder: '1.0 → 1.25', t432: '30초', first: '자막 없이 1회', ratio: '말하기 위주', mat: '학교 문서 · 실제 대화', focus: '첫 주 리허설: 자기소개 · 면담 · 교실 규칙 · 도움 요청' },
+];
+const TOPICS = {
+  intro: { name: '자기소개', ko: '교무실 · 학급 · 학부모에게 하는 자기소개', p: [
+    'Introduce yourself to the staff at your first morning tea. Keep it to about 45 seconds.',
+    'Introduce yourself to your new Year 5/6 class on the first day: who you are, one fun fact, and one thing you’re looking forward to.',
+    'Introduce yourself to a parent: who you are, where you taught before, and the best way to reach you.'] },
+  instr: { name: '교실 지시', ko: 'Y5–6 교실: 활동 설명 → 이해 확인 → 다시 설명', p: [
+    'It’s nine o’clock. Settle the class, take the roll, and explain what’s happening this morning.',
+    'Set up three maths groups: one with you, one doing independent practice, one playing a maths game. Explain how the rotation works.',
+    'Explain how to do a think–pair–share on today’s reading text, then check that everyone understands.',
+    'It’s a wet day. Explain the indoor lunchtime rules to the class.',
+    'Bring the class back after morning tea and settle them before writing.',
+    'Year 3/4 version: call the class to the mat and give three-step instructions for an art activity.'] },
+  explain: { name: '수업 설명', ko: '학습 목표 · 성공 기준 · 과제 방법 설명', p: [
+    'Introduce today’s learning intention and success criteria for a persuasive writing lesson.',
+    'Explain a two-week inquiry project: what we’ll find out, how groups will work, and how we’ll share it.',
+    'Model a maths strategy out loud: solve 47 + 38 by splitting into tens and ones.',
+    'Explain to a student who was away yesterday what they missed and what to do now.',
+    'Give a student feedback on their writing: one strength and one next step.'] },
+  merrin: { name: '봉사 경험', ko: '오늘 Merrin에서 있었던 일을 동료·가족에게', p: [
+    'Tell a colleague what you did today and one thing you noticed about the class.',
+    'Describe a moment today when you didn’t understand someone, and what you did about it.',
+    'Retell a conversation you heard at morning tea, in your own words.',
+    'Ask a teacher for advice — “How do you handle ___?” — then summarise their answer.'] },
+  meeting: { name: '회의 의견', ko: '의견 → 이유 → 예시 → 제안 (60–90초)', p: [
+    'In a team meeting, suggest a change to reading groups: opinion, reason, example, suggestion.',
+    'Answer “How are you finding things so far?” honestly but positively.',
+    'Propose how the team could support a new EAL student who has just arrived.',
+    'Disagree politely with the camp schedule and offer an alternative.',
+    'Sum up what was decided: what we’re doing, who’s doing it, and by when.'] },
+  parent: { name: '학부모 면담', ko: 'Kanohi ki te kanohi (1/28–29) 리허설', p: [
+    'Introduce yourself to a parent at the start-of-year meeting and explain how you’ll keep in touch.',
+    'Ask a parent about their child’s strengths, interests and goals for the year.',
+    'A parent says their child struggles with reading. Respond and explain what you’ll do.',
+    'A parent asks where you’re from and how long you’ve been teaching. Answer naturally in 30 seconds.',
+    'Explain the class reading and homework routine to a parent.'] },
+  small: { name: '동료 스몰토크', ko: '교무실 잡담을 1분 이어 가기', p: [
+    'At morning tea, ask a colleague about their weekend and keep the conversation going for one minute.',
+    'Tell a colleague a little about yourself and your family in 30–45 seconds.',
+    'Someone asks, “Keen for a coffee after school?” Respond and suggest a time.',
+    'Talk about your summer holiday plans, then ask about theirs.',
+    'Ask for help politely: “Sorry to bother you — how does the booking system work?”'] },
+  mock: { name: '모의수업', ko: '5–10분 수업 + 예상 못 한 질문에 대응', p: [
+    'Teach a five-minute mini-lesson on paragraph structure to Year 5/6. Ask Claude to play the students.',
+    'Run a five-minute class discussion: “Should kids have phones at school?”',
+    'Start a maths lesson with a number talk: 99 + 46. Respond to two different student answers.',
+    'First day: introduce yourself and set up three class agreements together.'] },
+  retry: { name: '점검 · 재도전', ko: '이번 주 가장 약했던 프롬프트를 더 짧고 분명하게', p: [
+    'Redo the prompt you rated lowest this week. Same content — shorter and clearer.',
+    'Replay this week’s hardest Merrin moment as a role-play, and say it the way you wish you had.'] },
+};
+const PHRASES = [
+  { h: '되묻기 · 확인 (동료)', k: 'ask', items: [
+    ['Sorry, what’s ___?', '모르는 말 하나만 콕 집어 묻기'], ['Do you mean ___?', '내가 이해한 걸로 확인'], ['Is that the same as ___?', '아는 개념에 연결'],
+    ['Just to check — you’d like me to ___ by ___?', '할 일 · 기한 확인'], ['Sorry, I missed the last bit. Could you say that again?', '끝부분을 놓쳤을 때'],
+    ['What would you like me to do next?', '다음 할 일 받기'], ['Can you show me what you mean?', '보여 달라고 하기'],
+    ['Who should I check with about ___?', '담당자 묻기'], ['How do you usually do ___ here?', '이 학교 방식 묻기']] },
+  { h: '교실 지시 (Y5–6)', k: 'instr', items: [
+    ['Kia ora koutou — eyes on me in three, two, one.', '주목시키기'], ['Today we’re learning to … Here’s what success looks like.', 'WALT + 성공 기준'],
+    ['Turn to your buddy and share one idea. You’ve got one minute.', '짝 토의'], ['Have a go on your own first, then check with your partner.', '먼저 혼자 해 보기'],
+    ['Thumbs up if you’re ready, sideways if you’re not sure.', '이해 확인'], ['Can someone explain that in their own words?', '자기 말로 다시'],
+    ['If you’re stuck, ask three before me.', '친구 셋에게 먼저'], ['Five minutes left — check your work against the success criteria.', '남은 시간 알리기'],
+    ['Pack up your gear, chairs in, and line up at the door.', '정리 · 줄 서기'], ['Whakarongo mai — listen to me. Titiro mai — look at me.', '교실 테레오']] },
+  { h: 'Y3–4라면 추가', k: 'y34', items: [
+    ['Come and sit on the mat — crossed legs, hands in your lap.', '매트 타임'], ['Walking feet, please.', '걷기'], ['Show me your thinking on your whiteboard.', '미니 화이트보드']] },
+  { h: '학생 말 듣고 되묻기', k: 'stu', items: [
+    ['What have you tried so far?', ''], ['So you’re saying ___ — is that right?', ''], ['Tell me more about that.', ''],
+    ['Show me where you got stuck.', ''], ['Let me explain that another way.', ''], ['What could you try next?', '']] },
+  { h: '회의 발언 (의견 → 이유 → 예시 → 제안)', k: 'meet', items: [
+    ['I think we could ___, because ___.', '의견 + 이유'], ['For example, at my last school we ___.', '예시'],
+    ['What if we tried ___ for two weeks and then reviewed it?', '제안'], ['Can I just add something?', '끼어들기'],
+    ['Building on what ___ said …', '이어 말하기'], ['I see it a bit differently.', '부드럽게 반대'],
+    ['So, just to sum up — we’re doing ___, and ___ is looking after ___. Is that right?', '정리 · 확인']] },
+  { h: '학부모 면담 · Kanohi ki te kanohi', k: 'par', items: [
+    ['Kia ora, I’m ___, ___’s teacher this year. Thanks so much for coming in.', ''], ['Tell me a bit about ___ — what are they into?', ''],
+    ['What are you hoping ___ gets out of this year?', ''], ['Is there anything that would help me get to know ___ better?', ''],
+    ['What’s the best way to keep in touch with you?', ''], ['I’ll keep you posted on how they’re settling in.', '']] },
+  { h: '교무실 스몰토크', k: 'small', items: [
+    ['How was your weekend? Did you get up to much?', 'get up to much = 뭐 좀 했어요?'], ['Busy day today?', ''],
+    ['How are you finding it so far?', '해 보니 어때요?'], ['Keen for a coffee?', 'keen = 하고 싶은'],
+    ['Sweet as, thanks!', '좋아요, 고마워요'], ['Any plans for the holidays?', '']] },
+];
+const KIWI = [['sweet as', '좋아 · 괜찮아'], ['chur', '고마워 (cheers)'], ['heaps', '아주 많이'], ['keen', '하고 싶은'], ['yeah nah', '아니 (거절)'], ['nah yeah', '응 (동의)'], ['she’ll be right', '괜찮을 거야'], ['good as gold', '아주 좋아'], ['stoked', '아주 기쁜'], ['knackered', '녹초가 된'], ['arvo', '오후'], ['togs', '수영복'], ['jandals', '쪼리'], ['chilly bin', '아이스박스'], ['dairy', '동네 가게'], ['bach', '별장 ("배치")'], ['tramping', '등산'], ['eh?', '(문장 끝) 그렇지?']];
+const REO = [['kia ora', '안녕 · 고마워'], ['mōrena', '좋은 아침'], ['ka pai · tino pai', '잘했어 · 아주 잘했어'], ['kia kaha', '힘내'], ['ka kite anō', '또 봐요'], ['kai', '음식'], ['whānau', '가족 · 공동체'], ['tamariki · ākonga', '아이들 · 학습자'], ['kaiako · tumuaki', '교사 · 교장'], ['kura · hui', '학교 · 회의'], ['karakia · waiata', '시작·마침 의식 · 노래'], ['mihi · pepeha', '소개 인사']];
+const SCHOOLW = [['morning tea', '오전 휴식 — 교무실에 앉기!'], ['take the roll', '출석 부르기'], ['duty', '운동장 지도'], ['release time', '수업 없는 시간'], ['TOD', 'teacher only day'], ['reliever', '대체 교사'], ['teacher aide', '보조 교사'], ['team · syndicate · hub', '학년 팀'], ['PB4L', '긍정 행동 지원'], ['ERO', '교육평가원 (학교 평가)'], ['IEP', '개별 교육 계획'], ['ESOL · EAL', '영어 학습자 지원'], ['SENCO · LSC', '학습 지원 코디네이터'], ['running record', '읽기 진단 기록'], ['WALT', 'We Are Learning To'], ['success criteria', '성공 기준'], ['wet day timetable', '비 오는 날 일정'], ['assembly', '전체 조회'], ['EOTC', '교외 체험 활동'], ['inquiry', '탐구 학습'], ['kapa haka', '마오리 공연'], ['Kāhui Ako', '학교 연합']];
+const VOWELS = [['fish → “fush”, six → “sux”', 'KIT 모음이 가운데로 (ɪ → ə)'], ['pen → “pin”, yes → “yis”, ten → “tin”', 'DRESS 모음이 올라감 (e → i)'], ['back → “beck”, bad → “bed”', 'TRAP 모음이 올라감 (æ → e)'], ['beer = bear, here = hair', 'NEAR · SQUARE 합침 — 문맥으로 구분']];
+const REDUCE = [['d’you reckon …?', 'do you reckon — 어떻게 생각해?'], ['gonna · wanna · gotta', 'going to · want to · got to'], ['didja · wouldja · couldja', 'did you · would you · could you'], ['lemme · gimme', 'let me · give me'], ['dunno', 'don’t know'], ['kinda · sorta', 'kind of · sort of'], ['y’know · ’cos', 'you know · because'], ['whaddaya', 'what do you'], ['have a bit of a look', '“habbada look” — 한번 볼게요'], ['how’s it goin’?', '안녕 (인사)'], ['c’mon · gotcha', 'come on · got you']];
+const PROMPTS = [
+  { t: '① 자막 분석', use: '에피소드 자막에서 막힌 10–20줄 → 상황 · 축약 · 학교 표현', text: `나는 뉴질랜드 초등학교(Y5–6 예정)에서 일할 한국인 교사야. 아래는 SubTutor에서 복사한 자막이야.
+
+1. 대화의 상황과 핵심 의미를 설명해 줘.
+2. 내가 놓쳤을 가능성이 있는 축약·연음·NZ 발음·어휘를 구분해 줘. 텍스트만으로 확정할 수 없는 것은 표시해 줘.
+3. 학교에서 쓰기 좋은 표현 3개를 골라 줘.
+4. 각 표현을 학생에게 하는 말과 동료에게 하는 말로 바꿔 줘.
+5. 마지막에 새 학교 상황 질문 3개를 줘. 내가 먼저 답한 뒤 피드백해 줘.
+
+[자막 붙여넣기]` },
+  { t: '② Q 줄 원인', use: 'Q로 표시한 줄 + 원인 태그 → 소리 설명 + 같은 패턴 10문장', text: `아래는 SubTutor에서 Q(못 알아들음)로 표시한 줄과 원인 태그야.
+
+1. 소리 차원에서 왜 안 들렸을지 설명해 줘 (연음·약화·NZ 모음·속도).
+2. 같은 소리 패턴을 가진 학교 상황 문장 10개를 만들어 줘.
+3. 그중 3개는 내가 따라 말할 수 있게 강세와 끊어 읽기를 표시해 줘.
+
+[Q 줄 + 원인 태그]` },
+  { t: '③ 입트기 교정', use: '받아 적은 내 말 + wpm → NZ 교사 버전과 나란히 (가장 값이 큼)', text: `아래는 내 학교 영어 말하기 기록이야. 대학 과제 제출문이 아니라 업무 영어 연습이야.
+
+상황:
+내가 전달하려던 뜻:
+받아 적힌 내 말:
+wpm과 내 코멘트:
+
+1. 의미 전달을 가장 방해하는 부분 3개만 짚어 줘.
+2. 뉴질랜드 교사가 같은 상황에서 쓸 법한 버전을 내 문장과 나란히 놓고 차이를 한 줄씩 보여 줘. 내 수준에서 바로 말할 수 있는 표현으로.
+3. 내가 다시 말하도록 핵심 단서만 줘.
+4. 이어서 동료 교사 역할로 예상하지 못한 질문을 하나씩 해 줘. 내가 답한 뒤 피드백해 줘.` },
+  { t: '④ 수첩 복원', use: 'Merrin·수업에서 들린 대로 적은 말 → 실제 문장 후보 3개', text: `뉴질랜드 초등학교 교무실·교실에서 들린 대로 적어 온 말이야. 철자는 엉망일 수 있어.
+각각에 대해 실제 문장 후보 3개와 그 말이 나왔을 법한 상황을 추정해 줘. 키위 표현이면 뜻과 비슷한 말도 알려 줘.
+
+[수첩 메모]` },
+  { t: '⑤ 단어 정리', use: '어려운 단어 목록 → 학교에서 쓰는 것만 + 상황 카드', text: `아래 어려운 단어 목록에서 뉴질랜드 학교 현장에서 실제로 쓰는 것만 남겨 줘.
+남긴 것마다 교실 예문 1개와 교무실 예문 1개를 붙이고, 자주 쓸 5개는 상황 카드(상황 → 내가 할 말)로 만들어 줘.
+
+[단어 목록]` },
+  { t: '⑥ 역할극', use: '모의수업 · 학부모 면담 · 회의 — 예상 못 한 질문 받기', text: `너는 [Merrin School Y5–6 학생 / 학부모 / 동료 교사] 역할이야. 나는 [상황 — 예: 설득하는 글쓰기 도입 수업 / 학년 초 학부모 면담]을 할 거야.
+실제 사람처럼 예상하지 못한 질문이나 반응을 한 번에 하나씩 해 줘. 내가 답하면 다음으로 넘어가.
+10번 주고받은 뒤, 내 영어에서 의미 전달을 막은 것 3개와 더 자연스러운 표현만 짧게 정리해 줘.` },
+  { t: '⑦ 주간 정리 (토)', use: '그 주 기록 통째로 → 약점 3개 · 다음 주 프롬프트', text: `이번 주 내 영어 기록 전체야 (입트기 기록, Q 원인 통계, 수첩 메모).
+
+1. 반복되는 약점 3개를 큰 순서대로
+2. 다음 주 소리 훈련 주제 1개 (효과가 가장 큰 것)
+3. 다음 주 입트기 프롬프트 3개 — 이번 주 실제 상황에서
+4. 이번 주에 자동화된 표현과 아직 안 된 표현 구분
+
+[기록 붙여넣기]` },
+  { t: '⑧ 과제 탐색 (규정 안에서)', use: '주제·관점 탐색만 — 문장은 받지 않기, AI 사용 진술에 기록', text: `TEPI615 과제 규정상 AI는 주제·관점 탐색에만 쓸 수 있고, 글은 내가 직접 써. 문장은 써 주지 마.
+나는 [관심 주제]에 관심이 있어.
+
+1. 뉴질랜드 공적 논쟁에 있는 질문 형태 5개 (Should … / What are the consequences of …)
+2. 각 질문의 대표 관점 2개와, 그 관점이 어디서 오는지 (연구 / 전문가 의견 / 정책 / 이념 / 학부모)
+3. UC 도서관에서 쓸 검색어 조합
+
+이 대화는 과제 끝의 AI 사용 진술문에 적을 거야.` },
+];
+const TARGETS = [
+  { k: 'comp', name: '첫 청취 이해율', unit: '%', hi: 1, base: 60, t: [70, 80, 85] },
+  { k: 'q', name: 'Q 비율 (못 알아들은 줄)', unit: '%', hi: 0, base: 40, t: [28, 18, 12] },
+  { k: 'dict', name: '받아쓰기 정확도', unit: '%', hi: 1, base: null, t: [75, 85, 90] },
+  { k: 'speed', name: '편하게 듣는 배속', unit: '×', hi: 1, base: 0.85, t: [1.0, 1.15, 1.25] },
+  { k: 'wpm', name: '입트기 말 속도', unit: 'wpm', hi: 1, base: null, t: [100, 115, 130] },
+  { k: 't432', name: '줄여 말하기 마지막 단계', unit: '초', hi: 0, base: 75, t: [60, 45, 30] },
+  { k: 'quick', name: '즉답 (5초 안에 시작)', unit: '/10', hi: 1, base: null, t: [6, 7, 8] },
+  { k: 'auto', name: '자동 발화 (상황 → 바로)', unit: '개', hi: 1, base: 0, t: [80, 180, 250] },
+];
+const TDATES = ['2026-12-06', '2027-01-03', '2027-01-24'];
+const INBOX = [
+  { h: '이번 주 먼저', badge: 1, items: [
+    ['w1', '기초 측정 — Educators 처음 보는 회차 무자막 → 이해율 · 받아쓰기 정확도 · 입트기 wpm (오늘 · 내일)'],
+    ['w2', '두 과제 주제를 인접하게 정하기 (예: EAL·다언어 학습자 지원 / structured literacy)'],
+    ['w3', 'Learn에서 Issues 발표 날짜와 문헌 리뷰 토론 날짜 확인'],
+    ['w4', 'Merrin 첫 봉사일 확인 — 11/13(금)은 Show Day 휴교라 11/18(수)이나 11/20(금)일 가능성 → 캘린더 › 설정에 반영'],
+    ['w5', '도서관 그룹 스터디룸 예약 방법 확인 (소리 내는 연습용)'],
+    ['w6', 'Merrin 수첩(또는 폰 메모) 준비'],
+    ['w7', '이 페이지를 아이폰 홈 화면에 추가 (Safari 공유 → 홈 화면에 추가)']] },
+  { h: '확인할 것', badge: 1, items: [
+    ['c1', '첫 출근일 — 학교 달력: 1/26 사무실 오픈 · 1/28–29 학부모 면담 · 2/1 개학 (캘린더 › 설정 › 부임일)'],
+    ['c2', '담당 학년 — Y5–6 가능성이 큼, 아니면 Y3–4'],
+    ['c3', '방학 중 오전(9:00–12:30) 아이 돌봄 — 문헌 리뷰·영어 블록의 전제'],
+    ['c4', '12/17(목) 마지막 수업 날 아이 돌봄 (방학 시작 뒤)'],
+    ['c5', 'Y5/6 캠프 기간(12/2–4)에 봉사할 반']] },
+  { h: 'Merrin에서 12/15 전에 확보할 것', badge: 0, items: [
+    ['m1', '학교 주간 통신문 · 행사 안내 · PB4L · 학교 가치 문구 (1월 읽기 자료)'],
+    ['m2', '주간 계획 · 단원 계획 양식과 실제 작성 예시'],
+    ['m3', '교무회의 진행 방식 — 누가 언제 발언하는지, 안건이 어떻게 돌아가는지'],
+    ['m4', '함께 일할 동료 2–3명의 이름 · 학년 · 말버릇 (수첩에만 적기)'],
+    ['m5', 'Y5–6(또는 Y3–4) 하루 시간표 · 읽기/수학 그룹 운영 방식'],
+    ['m6', '1/28–29 Kanohi ki te kanohi 면담 진행 방식 · 준비물'],
+    ['m7', '학부모 소통 방식 (앱 · 이메일 · 통신문)'],
+    ['m8', 'Y5/6 End of Year Assembly (12/11 금 9:15) 참관']] },
+];
+const SPEAK_URL = 'https://bluemuple.github.io/subtutor/#/speak';
+
+/* ═════════ 3. 상태 (이 기기 브라우저에만 저장) ═════════ */
+const LS_KEY = 'tb.state.v1';
+const DEF_SET = { merrinStart: '2026-11-13', merrinEnd: '2026-12-15', kidsHoliday: '2026-12-16', litTarget: '2027-01-11', dday: '2027-01-28', lang: 'en', h24: false, theme: 'auto', hourH: 60, hidden: {} };
+function freshState() { return { v: 1, set: JSON.parse(JSON.stringify(DEF_SET)), done: {}, steps: {}, inst: {}, series: {}, extra: {}, custom: [], inbox: {}, metrics: [], seenHelp: false }; }
+function normalize(s) {
+  const f = freshState();
+  if (!s || typeof s !== 'object' || Array.isArray(s)) return f;
+  const o = Object.assign(f, s);
+  o.set = Object.assign({}, DEF_SET, s.set || {});
+  o.set.hidden = Object.assign({}, (s.set && s.set.hidden) || {});
+  for (const k of ['done', 'steps', 'inst', 'series', 'extra', 'inbox']) if (!o[k] || typeof o[k] !== 'object' || Array.isArray(o[k])) o[k] = {};
+  for (const k of ['custom', 'metrics']) if (!Array.isArray(o[k])) o[k] = [];
+  return o;
+}
+function load() { try { return normalize(JSON.parse(localStorage.getItem(LS_KEY) || 'null')); } catch (e) { return freshState(); } }
+let S = load();
+let undoSnap = null;
+function snap() { undoSnap = JSON.stringify(S); }
+function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { toast('저장 실패 — 이 브라우저는 기록을 남길 수 없어요'); } }
+function undo() { if (!undoSnap) return; S = normalize(JSON.parse(undoSnap)); undoSnap = null; save(); applyTheme(); renderAll(); refreshSheet(); }
+
+/* ═════════ 4. 기본 일정 만들기 ═════════ */
+function phaseOf(ds) {
+  if (ds < FIX.planStart) return 'before';
+  if (ds < FIX.course1) return 'prep';
+  if (ds < S.set.kidsHoliday) return 'term';
+  if (ds < S.set.litTarget) return 'hol';
+  if (ds < S.set.dday) return 'ready';
+  if (ds <= FIX.planEnd) return 'dday';
+  return 'after';
+}
+function isMerrinDay(ds) {
+  if (HOLI[ds] || ds < S.set.merrinStart || ds > S.set.merrinEnd || ds > FIX.schoolLast) return false;
+  if (ds === S.set.merrinEnd) return true; // 마지막 날 (방학식)
+  const wd = dow(ds); return wd === 3 || wd === 5;
+}
+function firstMerrin() { let d = S.set.merrinStart; for (let i = 0; i < 60 && d <= S.set.merrinEnd; i++, d = addDays(d, 1)) if (isMerrinDay(d)) return d; return null; }
+function merrinDays() { const out = []; for (let d = S.set.merrinStart; d <= S.set.merrinEnd && out.length < 80; d = addDays(d, 1)) if (isMerrinDay(d)) out.push(d); return out; }
+function hasClass(ds) {
+  if (HOLI[ds]) return false;
+  const wd = dow(ds);
+  if (wd === 1) return ds >= FIX.course1 && ds <= FIX.monLast;
+  if (wd === 4) return ds >= FIX.thuFirst && ds <= FIX.thuLast;
+  return false;
+}
+function weekNo(ds) { const n = daysBetween(FIX.course1, ds); return n < 0 ? 0 : Math.floor(n / 7) + 1; }
+function levelOf(ds) { const w = weekNo(ds); return LEVELS.find(l => w >= l.from && w <= l.to) || LEVELS[LEVELS.length - 1]; }
+function topicOf(ds) {
+  const ph = phaseOf(ds), wd = dow(ds);
+  if (ph === 'prep' || ph === 'before') return 'intro';
+  if (isMerrinDay(ds)) return 'merrin';
+  if (ph === 'term') return ['retry', 'instr', 'explain', 'small', 'meeting', 'small', 'mock'][wd];
+  return ['retry', 'instr', 'explain', 'parent', 'meeting', 'small', 'mock'][wd];
+}
+function asgPlan(ds) { return ASG_PLAN.find(p => ds >= p.from && ds <= p.to) || null; }
+function asgFocus(ds) { const p = asgPlan(ds); return p ? p.t : '과제'; }
+function subsFor(ds) {
+  const out = [[640, '☕ morning tea — 교무실에 앉기 (시각 확인)']];
+  for (const ev of SCHOOL) if (ev.sub && ds >= ev.d && ds <= (ev.to || ev.d)) out.push(...ev.sub);
+  return out.sort((a, b) => a[0] - b[0]);
+}
+
+function genDay(ds) {
+  const ph = phaseOf(ds);
+  if (ph === 'before' || ph === 'after') return [];
+  const wd = dow(ds), out = [];
+  const T = TOPICS[topicOf(ds)];
+  const A = (sid, s, e, title, cat, x) => out.push(Object.assign({ sid, s: toMin(s), e: e === '24:00' ? 1440 : toMin(e), title, cat }, x || {}));
+  const famAm = () => A('fam-am', '05:00', '07:00', '가족 시간', 'fam', { r: 'fam' });
+  const eve = () => A('eng-eve', '20:00', '20:30', `영어 저녁 30 · ${T.name}`, 'eng', { r: 'eve30' });
+  const evening = (sid, from) => { A(sid, from, '19:30', '가족 · 저녁', 'fam', { r: 'fam' }); A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam'); eve(); A('rest-eve', '20:30', '22:00', '정리 · 휴식', 'rest'); };
+  const weekend = wd === 0 || wd === 6;
+  A('sleep-am', '00:00', '05:00', '수면', 'rest');
+
+  if (LIGHT.has(ds) || (ph === 'dday' && weekend)) {
+    A('fam-light', '05:00', '19:30', `가족 · ${HOLI[ds] || LIGHT_NAME[ds] || '주말'}`, 'fam', { r: 'fam' });
+    A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam');
+    A('eng-light', '20:00', '20:30', '가벼운 영어 30', 'eng', { r: 'light30' });
+    A('rest-eve', '20:30', '22:00', '정리 · 휴식', 'rest');
+  } else if (weekend) {
+    const readyish = ph === 'ready' || ph === 'dday';
+    A('fam-wkam', '05:00', '09:00', '가족 아침', 'fam', { r: 'fam' });
+    if (wd === 6) {
+      A('eng-week', '09:00', '10:30', '영어 주간 정리 90', 'eng', { r: 'week90' });
+      A('fam-wk1', '10:30', '13:00', '가족', 'fam', { r: 'fam' });
+      A('asg-sat', '13:00', '14:30', readyish ? '부임 준비' : '과제 예비 (밀린 주만)', 'asg', { r: readyish ? 'ready' : 'asgOpt', opt: true });
+      A('fam-wk2', '14:30', '19:30', '가족 · 저녁', 'fam', { r: 'fam' });
+      A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam');
+      A('rest-wk', '20:00', '22:00', '휴식', 'rest');
+    } else {
+      A('asg-sun', '09:00', '10:30', readyish ? '부임 준비' : '과제 예비', 'asg', { r: readyish ? 'ready' : 'asgOpt', opt: true });
+      A('fam-sun', '10:30', '19:30', '가족 · 쉼', 'fam', { r: 'fam' });
+      A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam');
+      A('eng-metric', '20:00', '20:20', '주간 측정 20', 'eng', { r: 'metric20' });
+      A('rest-sun', '20:20', '22:00', '휴식 · 다음 주 보기', 'rest');
+    }
+  } else if (ph === 'dday') {
+    famAm();
+    A('prep-mer', '07:00', '07:30', '아침 준비', 'fam');
+    A('mer-warm', '07:30', '08:00', '출근 · 차 안 워밍업', 'eng', { r: 'ddwarm' });
+    A('dd-school', '08:00', '16:00', ds === S.set.dday ? 'Merrin · 부임 첫날' : 'Merrin · 출근', 'mer', { r: 'dday', loc: 'Merrin School (시간 확인)' });
+    A('mer-home', '16:00', '16:20', '귀가', 'move', { r: 'move' });
+    A('mer-rec', '16:20', '16:45', '하루 회수 25', 'eng', { r: 'merrec' });
+    A('fam-pm-m', '16:45', '19:30', '가족 · 저녁', 'fam', { r: 'fam' });
+    A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam'); eve(); A('rest-eve', '20:30', '22:00', '정리 · 휴식', 'rest');
+  } else if (isMerrinDay(ds)) {
+    famAm();
+    A('prep-mer', '07:00', '07:30', '아침 준비', 'fam');
+    A('mer-warm', '07:30', '08:00', '출근 · 차 안 워밍업', 'eng', { r: 'merwarm' });
+    if (ds === FIX.schoolLast) {
+      A('mer-last', '08:00', '14:15', 'Merrin 마지막 날 · 2시 하교', 'mer', { r: 'merrin', loc: 'Merrin School', sub: subsFor(ds) });
+      A('mer-home2', '14:15', '14:40', '귀가', 'move', { r: 'move' });
+      A('mer-rec2', '14:40', '15:05', '봉사 회수 · 고마움 전하기', 'eng', { r: 'merrec' });
+      evening('fam-pm', '15:05');
+    } else {
+      const tag = ds === firstMerrin() ? ' · 첫날' : ds === S.set.merrinEnd ? ' · 마지막' : '';
+      A('mer', '08:00', '16:00', `Merrin 봉사${tag}`, 'mer', { r: 'merrin', loc: 'Merrin School', sub: subsFor(ds) });
+      A('mer-home', '16:00', '16:20', '귀가', 'move', { r: 'move' });
+      A('mer-rec', '16:20', '16:45', '봉사 회수 25', 'eng', { r: 'merrec' });
+      evening('fam-pm-m', '16:45');
+    }
+  } else if ((ph === 'term' || ph === 'prep') && ds === '2026-11-05') {
+    // 오늘: iPhone 캘린더의 줌 일정 + 기초 측정
+    famAm();
+    A('prep-am', '07:00', '08:30', '아침 · 등교 준비', 'fam');
+    A('run', '08:30', '09:10', '등교 → 도서관', 'move', { r: 'move' });
+    A('n5-eng', '09:10', '10:00', '영어 50 · SubTutor 루틴 맛보기', 'eng', { r: 'pre45', loc: '도서관 (이어폰)' });
+    A('n5-zoom', '10:00', '11:00', '교사 등록 줌 (주소는 이메일에)', 'asg', { r: 'zoom' });
+    A('n5-asg1', '11:00', '12:00', '과제 · 두 과제 주제 정하기', 'asg', { r: 'asg', loc: 'UC 도서관' });
+    A('n5-lunch', '12:00', '12:30', '점심', 'rest');
+    A('n5-asg2', '12:30', '13:30', '과제 · 자료 검색 시작', 'asg', { r: 'asg', loc: 'UC 도서관' });
+    A('n5-base', '13:30', '14:30', '영어 기초 측정 (baseline)', 'eng', { r: 'base' });
+    A('pickup', '14:35', '15:05', '하교 픽업', 'move', { r: 'move' });
+    evening('fam-pm', '15:05');
+  } else if (ph === 'term' || ph === 'prep') {
+    famAm();
+    A('prep-am', '07:00', '08:30', '아침 · 등교 준비', 'fam');
+    A('run', '08:30', '09:10', '등교 → 도서관', 'move', { r: 'move' });
+    if (hasClass(ds)) {
+      const online = FIX.online[ds], last = ds === FIX.monLast || ds === FIX.thuLast;
+      A('eng-pre', '09:10', '09:55', '영어 45 · 수업 전 듣기', 'eng', { r: 'pre45', loc: '도서관 (이어폰)' });
+      A('uni', '10:00', '12:00', `TEPI615 Workshop ${wd === 1 ? 'A' : 'B'}${online ? ' · 온라인' : ''}${last ? ' · 마지막' : ''}`, 'uni', { r: 'uni', loc: online ? '온라인 (스터디룸·집)' : 'Rehua 005' });
+      A('lunch-c', '12:00', '12:30', '점심', 'rest');
+      A('eng-unirec', '12:30', '12:50', '수업 회수 20', 'eng', { r: 'unirec' });
+      A('asg-cls', '12:50', '14:30', `과제 · ${asgFocus(ds)}`, 'asg', { r: 'asg', loc: 'UC 도서관' });
+    } else {
+      A('asg-am', '09:10', '10:40', `과제 ① · ${asgFocus(ds)}`, 'asg', { r: 'asg', loc: 'UC 도서관' });
+      A('eng-60', '10:50', '11:50', ph === 'prep' ? '영어 60 · 표준 루틴 첫 회' : '영어 60 · 표준 루틴', 'eng', { r: 'eng60', loc: '도서관 · 말하기는 스터디룸·차 안' });
+      A('lunch', '11:50', '12:20', '점심', 'rest');
+      A('asg-pm', '12:20', '14:30', `과제 ② · ${asgFocus(ds)}`, 'asg', { r: 'asg', loc: 'UC 도서관' });
+    }
+    A('pickup', '14:35', '15:05', '하교 픽업', 'move', { r: 'move' });
+    evening('fam-pm', '15:05');
+  } else if (ph === 'hol') {
+    famAm();
+    if (hasClass(ds)) {
+      A('prep-hol2', '07:00', '09:20', '아침 · 아이들 (돌봄 확인)', 'fam', { r: 'famHol' });
+      A('run-c', '09:20', '10:00', '이동 · Pocket 듣기', 'move', { r: 'move' });
+      A('uni', '10:00', '12:00', `TEPI615 Workshop B${ds === FIX.thuLast ? ' · 마지막' : ''}`, 'uni', { r: 'uni', loc: 'Rehua 005' });
+      A('lunch-c', '12:00', '12:30', '점심', 'rest');
+      A('eng-unirec', '12:30', '12:50', '수업 회수 20', 'eng', { r: 'unirec' });
+      A('move-home', '12:50', '13:20', '귀가', 'move', { r: 'move' });
+      A('fam-hol2', '13:20', '19:30', '가족 · 방학', 'fam', { r: 'famHol' });
+    } else {
+      A('prep-hol', '07:00', '09:00', '아침 · 아이들', 'fam', { r: 'famHol' });
+      A('lr-am', '09:00', '10:30', `문헌 리뷰 · ${asgFocus(ds)}`, 'asg', { r: 'asg' });
+      A('eng-60h', '10:45', '11:45', '영어 60 · 표준 루틴', 'eng', { r: 'eng60' });
+      A('eng-real', '11:45', '12:30', `영어 실전 45 · ${T.name}`, 'eng', { r: 'real45' });
+      A('fam-hol', '12:30', '19:30', '가족 · 방학', 'fam', { r: 'famHol' });
+    }
+    A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam');
+    A('lr-eve', '20:00', '21:00', '문헌 리뷰 · 집필', 'asg', { r: 'asg' });
+    A('eng-eve-h', '21:00', '21:20', '영어 저녁 20', 'eng', { r: 'eve20' });
+    A('rest-eve-h', '21:20', '22:00', '정리 · 휴식', 'rest');
+  } else if (ph === 'ready') {
+    famAm();
+    const submit = ds === S.set.litTarget;
+    A('prep-hol', '07:00', submit ? '08:30' : '09:00', '아침 · 아이들', 'fam', { r: 'famHol' });
+    if (submit) A('lr-submit', '08:30', '09:00', '문헌 리뷰 + 핸드아웃 제출', 'asg', { r: 'submit' });
+    A('eng-60r', '09:00', '10:00', '영어 60 · 표준 + 고속 적응', 'eng', { r: 'eng60' });
+    A('eng-real-r', '10:15', '11:00', `영어 실전 45 · ${T.name}`, 'eng', { r: 'real45' });
+    A('ready-prep', '11:15', '12:15', '부임 준비 · 영어로', 'asg', { r: 'ready' });
+    A('fam-rdy', '12:15', '19:30', '가족 · 방학', 'fam', { r: 'famHol' });
+    A('bed-kids', '19:30', '20:00', '아이들 재우기', 'fam'); eve(); A('rest-eve', '20:30', '22:00', '정리 · 휴식', 'rest');
+  }
+  A('sleep-pm', '22:00', '24:00', '취침', 'rest');
+  return out;
+}
+
+function allDayFor(ds) {
+  const out = [], seen = new Set();
+  const push = (t, cat) => { if (!seen.has(t)) { seen.add(t); out.push({ t, cat }); } };
+  if (HOLI[ds]) push(HOLI[ds], 'due');
+  let hasDue = false;
+  for (const x of DEADLINES) if (x.at.slice(0, 10) === ds) { push(`마감 ${x.at.slice(11)} · ${x.short}`, 'due'); hasDue = true; }
+  for (const m of MILE) if (m.d === ds) push(m.t, m.cat);
+  if (ds === firstMerrin()) push('Merrin 첫 봉사 (예상 · 확인 필요)', 'mer');
+  if (ds === S.set.merrinStart && !isMerrinDay(ds)) push(HOLI[ds] ? '봉사 시작 예상일이지만 휴교' : '봉사 시작 예상일 (봉사 요일 아님)', 'mer');
+  if (ds === S.set.kidsHoliday) push('아이들 여름방학 시작', 'fam');
+  if (ds === S.set.litTarget && !hasDue) push('목표 · 문헌 리뷰 제출', 'asg');
+  if (ds === S.set.dday) push('부임 D-day', 'mer');
+  for (const ev of SCHOOL) if (ds >= ev.d && ds <= (ev.to || ev.d) && (!ev.mo || isMerrinDay(ds))) push(ev.t, 'mer');
+  return out;
+}
+
+/* ═════════ 5. 편집을 반영한 블록 ═════════ */
+// 편집 구조: inst[블록id] = 이 날만 · series[sid] = [{from, wd|null, ch}] (나중 것이 이김) · extra[날짜] = 하루짜리 · custom = 내가 만든 반복
+function blocksFor(ds) {
+  const wd = dow(ds), list = [];
+  for (const b of genDay(ds)) { b.id = `${b.sid}@${ds}`; b.kind = 'gen'; list.push(b); }
+  for (const c of S.custom) {
+    if (ds < c.from || (c.to && ds > c.to) || !Array.isArray(c.wd) || !c.wd.includes(wd)) continue;
+    list.push({ sid: c.id, id: `${c.id}@${ds}`, s: c.s, e: c.e, title: c.title, cat: c.cat, note: c.note || '', kind: 'custom' });
+  }
+  const res = [];
+  for (const b of list) {
+    const ents = (S.series[b.sid] || []).filter(x => x.from <= ds && (x.wd == null || x.wd === wd));
+    for (const x of ents) Object.assign(b, x.ch);
+    const o = S.inst[b.id];
+    if (o) Object.assign(b, o);
+    b.mod = !!(ents.length || o);
+    b.ds = ds;
+    if (b.del) continue;
+    res.push(b);
+  }
+  for (const x of (S.extra[ds] || [])) res.push(Object.assign({}, x, { kind: 'extra', ds, sid: null, mod: false }));
+  for (const b of res) { b.s = clamp(Math.round(b.s), 0, 1435); b.e = clamp(Math.round(b.e), b.s + 5, 1440); if (!CATS[b.cat]) b.cat = 'rest'; }
+  res.sort((a, b) => a.s - b.s || (b.e - b.s) - (a.e - a.s));
+  return res;
+}
+const visible = list => list.filter(b => !S.set.hidden[b.cat]);
+
+function applyEditRaw(b, ch, scope) {
+  if (b.kind === 'extra') { const it = (S.extra[b.ds] || []).find(x => x.id === b.id); if (it) Object.assign(it, ch); return; }
+  if (scope === 'one') { S.inst[b.id] = Object.assign(S.inst[b.id] || {}, ch); return; }
+  const from = b.ds, wdv = scope === 'wd' ? dow(from) : null, keys = Object.keys(ch);
+  // 같은 범위의 이 날 이후 '이 날만' 편집은 새 반복 편집에 흡수
+  for (const id of Object.keys(S.inst)) {
+    const at = id.lastIndexOf('@'), sid = id.slice(0, at), d = id.slice(at + 1);
+    if (sid !== b.sid || d < from || (wdv != null && dow(d) !== wdv)) continue;
+    for (const k of keys) delete S.inst[id][k];
+    if (!Object.keys(S.inst[id]).length) delete S.inst[id];
+  }
+  const arr = S.series[b.sid] || [];
+  for (const x of arr) if (x.from >= from && (wdv == null || x.wd === wdv)) for (const k of keys) delete x.ch[k];
+  S.series[b.sid] = arr.filter(x => Object.keys(x.ch).length);
+  S.series[b.sid].push({ from, wd: wdv, ch: Object.assign({}, ch) });
+}
+function setInst(x, ch) {
+  if (x.kind === 'extra') { const it = (S.extra[x.ds] || []).find(y => y.id === x.id); if (it) Object.assign(it, ch); }
+  else S.inst[x.id] = Object.assign(S.inst[x.id] || {}, ch);
+}
+function scopeText(scope, b) { return scope === 'one' ? '이 날만' : scope === 'wd' ? `매주 ${WD_KO[dow(b.ds)]}요일` : '앞으로 모든 날'; }
+async function askScope(b, verb) {
+  if (b.kind === 'extra') return 'one';
+  return actionSheet(`반복되는 블록이에요 — 어디까지 ${verb}까요?`, [
+    { k: 'one', t: `이 날만 (${dLabel(b.ds)})` },
+    { k: 'wd', t: `앞으로 매주 ${WD_KO[dow(b.ds)]}요일` },
+    { k: 'all', t: '앞으로 모든 날 (같은 블록)' },
+  ]);
+}
+async function commitEdit(b, ch, verb) {
+  const scope = await askScope(b, verb || '바꿀');
+  if (!scope) { renderGrid(); return; }
+  snap(); applyEditRaw(b, ch, scope); save(); renderAll();
+  toast(`${scopeText(scope, b)} 바꿨어요`, true);
+}
+async function deleteBlock(b) {
+  const scope = await askScope(b, '지울');
+  if (!scope) return;
+  snap();
+  if (b.kind === 'extra') S.extra[b.ds] = (S.extra[b.ds] || []).filter(x => x.id !== b.id);
+  else applyEditRaw(b, { del: true }, scope);
+  save(); closeSheet(); renderAll();
+  toast(`${scopeText(scope, b)} 지웠어요`, true);
+}
+function pushFrom(b, n) {
+  snap();
+  const cur = b.ds === today && nowI() >= b.s && nowI() < b.e;
+  const pivot = cur ? b.e : b.s, all = blocksFor(b.ds);
+  const sl = all.find(x => x.sid === 'sleep-pm'), sleepS = sl ? sl.s : 1440;
+  for (const x of all) {
+    if (/^sleep/.test(x.sid || '')) continue;
+    let ch = null;
+    if (x.id === b.id) ch = cur ? { e: Math.min(1440, x.e + n) } : { s: x.s + n, e: x.e + n };
+    else if (x.s >= pivot && x.s >= b.s) ch = { s: x.s + n, e: x.e + n };
+    if (!ch) continue;
+    if (ch.s != null) ch.s = Math.min(1430, ch.s);
+    const s2 = ch.s != null ? ch.s : x.s;
+    // 잠자기 전 마지막 블록은 취침 시각을 넘기지 않게 줄인다
+    if (x.e <= sleepS && ch.e > sleepS && s2 + 10 <= sleepS) ch.e = sleepS;
+    ch.e = clamp(ch.e, s2 + 5, 1440);
+    setInst(x, ch);
+  }
+  save(); renderAll(); refreshSheet();
+  toast(`${n}분 뒤로 밀었어요 (이 날만)`, true);
+}
+function addBlock(ds, v) {
+  snap();
+  const id = (v.rep === 'none' ? 'x' : 'c') + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
+  if (v.rep === 'none') (S.extra[ds] || (S.extra[ds] = [])).push({ id, s: v.s, e: v.e, title: v.title, cat: v.cat, note: v.note || '' });
+  else S.custom.push({ id, wd: v.rep === 'wd' ? [dow(ds)] : v.rep === 'weekdays' ? [1, 2, 3, 4, 5] : [0, 1, 2, 3, 4, 5, 6], from: ds, to: v.until || null, s: v.s, e: v.e, title: v.title, cat: v.cat, note: v.note || '' });
+  save(); renderAll();
+  toast('블록을 추가했어요', true);
+}
+function toggleDone(id) {
+  snap();
+  if (S.done[id]) delete S.done[id]; else S.done[id] = 1;
+  save(); renderGrid(); refreshSheet(); updateBadge();
+  if (S.done[id]) toast('완료 ✓', true);
+}
+
+/* ═════════ 6. 루틴 (블록을 누르면 보이는 단계) ═════════ */
+function rtOf(b) {
+  const ds = b.ds, L = levelOf(ds), tk = topicOf(ds), T = b.generic ? { name: '오늘 주제', ko: '' } : TOPICS[tk], w = weekNo(ds), late = w >= 5, P = asgPlan(ds);
+  const R = { steps: [], notes: [], prompt: false, links: [], phr: false };
+  switch (b.r) {
+    case 'eng60':
+      R.steps = ['0–10 · 오늘의 훈련 — 대기 복습부터, 정답 보기 전에 먼저 소리 내어 답하기',
+        `10–30 · 새 장면 2–3분: 1배 · ${L.first} → 무슨 상황인지 한 줄로 말하기`,
+        '놓친 줄에 [Q] → 영어 자막 확인 (뜻이 막힐 때만 [T])',
+        `단어는 아는데 안 들린 줄: [F] 다시 듣기 → [X] 속도 사다리 ${L.ladder} — 반드시 1배 이상으로 끝`,
+        'Q 원인 태그 (속도 · 단어 · 축약 · 키위 발음 · 긴 문장) → 자막 끄고 1배로 다시 듣기',
+        late ? '30–38 · 고속 적응 ⏩ 1 → 1.25 → 1.5 → 다시 1배 (이해 확인 문장만)' : '30–38 · NZ 모음 2지선다 + 축약 top 10',
+        '38–48 · [W] 따라하기 → [R] 더빙 → 더빙 명료도 확인',
+        `48–60 · 입트기 「${T.name}」 줄여 말하기 4·3·2 (${L.t432}) → 받아 적기 · wpm`,
+        '학교에서 쓸 문장만 [E]로 저장 — 3개 이내'];
+      R.notes = [`지금 단계 ${L.name}: ${L.focus}`, `자료: ${L.mat}`, '도서관에서는 소리 내는 단계(7·8번)를 스터디룸·차 안에서 — 안 되면 저녁 블록으로 미루기'];
+      R.prompt = true; R.links = ['routine', 'phrases', 'speak']; break;
+    case 'pre45':
+      R.steps = ['0–15 · 오늘의 훈련 (받아쓰기 → 카드 → Q 재청취 · 더빙은 저녁에)',
+        `15–35 · 새 장면 1개: 1배 · ${L.first} → [Q] → [F] / [X] 사다리 ${L.ladder} → [T]는 마지막에만`,
+        '35–42 · Q 원인 태그 + NZ 모음 2지선다 5문항',
+        '42–45 · 수업 중 목표 1개: 질문 또는 발언 1번 — 첫 문장을 미리 정해 두기'];
+      R.notes = ['도서관용 — 이어폰으로 듣기만. 말하기는 회수 · 저녁 블록에서'];
+      R.links = ['routine']; break;
+    case 'unirec':
+      R.steps = ['수업 중 메모한 말 → 실제 문장 추정 (자신 없으면 Claude ④)', '쓸 만한 학술 표현 3개 → 단어장 (과제 글쓰기 재료)', '오늘 한 질문 · 발언을 더 짧고 분명하게 다시 — 입 모양으로라도'];
+      R.links = ['claude']; break;
+    case 'uni':
+      R.steps = ['못 알아들은 말은 들린 대로 메모 (회수 20분에 처리)', '질문 또는 발언 1번 — 아침에 정한 첫 문장으로 시작', '발표 · 토론 날짜 공지가 나오면 할 일 목록에 적기'];
+      R.notes = ['영어 수업 2시간 = 듣기 몰입 시간. 교수 · 동료의 말버릇을 관찰'];
+      if (FIX.online[ds]) R.notes.push('온라인 수업 — 도서관 스터디룸이나 집에서 (마이크가 필요할 수 있음)');
+      if (ds === FIX.thuLast) R.notes.push('방학이 시작된 뒤라 아이 돌봄을 미리 확인');
+      R.links = ['inbox']; break;
+    case 'eve30':
+      R.steps = ['0–10 · 오늘의 훈련 — 받아쓰기 복습 위주',
+        `10–25 · 입트기 「${T.name}」 오늘의 프롬프트로 4·3·2 (${L.t432}) — 녹음 듣고 가장 큰 오류 1개만 고치기`,
+        '25–30 · 자유 말하기 30–60초: 오늘 있었던 일 → 내일 쓸 표현 1개 정하기'];
+      if (tk === 'merrin') R.notes = ['봉사 날 저녁: 새 영상 대신 오늘 겪은 일로 말하기 — 회수한 문장 활용'];
+      R.prompt = true; R.links = ['speak', 'claude']; break;
+    case 'eve20':
+      R.steps = ['0–8 · 받아쓰기 복습', `8–20 · 입트기 1개 「${T.name}」 4·3·2 (${L.t432})`];
+      R.prompt = true; R.links = ['speak']; break;
+    case 'merwarm':
+      R.steps = ['오늘 쓸 문장 3개를 소리 내어 3번씩 — 교실 지시 1 · 스몰토크 1 · 질문 1', '되묻기 3개 입에 붙이기: Sorry, what’s ___? · Do you mean ___? · Just to check …'];
+      R.phr = true; R.links = ['phrases']; break;
+    case 'ddwarm':
+      R.steps = ['면담 첫 인사 3문장 소리 내어 3번', '자기소개 30초 1번'];
+      R.phr = true; R.links = ['phrases']; break;
+    case 'merrin':
+      R.steps = ['첫 인사 + 스몰토크 1번 (How was your weekend? / Busy day today?)', '동료에게 질문 1번 + 확인 질문 1번 (Just to check, do you mean …?)', '☕ morning tea는 교무실에 앉기 — 대화에 한 번 끼어들기', '학생과 대화 3번 이상 — What have you tried so far?', '못 알아들은 말을 수첩에 들린 대로 10–15개 (철자 틀려도 OK)', '12/15 전 확보 목록에서 1개 챙기기'];
+      R.notes = ['녹음은 하지 않기 — 동의 없는 녹음은 프라이버시 · 신뢰 문제. 수첩으로 충분', '되묻는 것을 부끄러워하지 않기 — 교사가 모르는 것을 묻는 모습 자체가 모델링', '교실보다 교무실 잡담과 회의가 진짜 어려운 영어 — 의식적으로 그 자리에 앉기'];
+      if (ds >= CAMP[0] && ds <= CAMP[1]) R.notes.unshift('Y5/6는 Waipara 캠프 중 — 오늘 어느 반에서 봉사하는지 확인');
+      if (ds === FIX.schoolLast || ds === S.set.merrinEnd) R.notes.unshift('마지막 날: “Thanks so much for having me — I’ve learnt heaps.” · 1월에 다시 만날 사람들 이름 확인');
+      R.links = ['inbox', 'phrases']; break;
+    case 'merrec':
+      R.steps = ['수첩 메모 정리 — 들린 대로 적은 말을 그대로 옮기기', '자신 없는 말 → Claude ④: 실제 문장 후보 3개와 상황', '쓸 만한 문장 → 입트기 프롬프트 추가 · 단어장에 문장째 저장', '다음 봉사 때 쓸 문장 3개 정하기 (교실 지시 · 스몰토크 · 질문)'];
+      R.notes = ['그날 들은 것은 그날 처리 — 다음 날이면 기억에서 사라진다'];
+      R.links = ['claude']; break;
+    case 'real45':
+      R.steps = [`준비 10 · 상황 「${T.name}」: 키워드 3개만 적기 (원고 금지)`, '말하기 10 · 녹음하며 실제처럼 — 멈추지 말고 끝까지', '질문 대응 10 · Claude ⑥ 역할극: 학생 · 동료 · 학부모가 예상 못 한 질문', '녹음 확인 10 · 의미 전달을 막은 것 1–2개만', '다시 말하기 5 · 같은 내용을 더 짧고 분명하게'];
+      R.prompt = true; R.links = ['claude', 'phrases']; break;
+    case 'week90':
+      R.steps = [w === 0 ? '첫 주: 요일별 말하기 주제를 보고 입트기에 Y5–6 상황 프롬프트 10개 추가' : '이번 주 Q 원인 통계 → 가장 큰 원인 1개를 다음 주 소리 훈련 주제로',
+        '이번 주 입트기 기록을 통째로 Claude ⑦에 붙여넣기 → 약점 3개 · NZ 교사 버전과 비교',
+        '모의수업 5–10분 (Y5–6) — 녹음 → Claude ⑥이 학생 역할 → 다시 하기',
+        '다음 주 입트기 프롬프트 3개 — 이번 주 실제로 겪은 상황에서',
+        '단어장 정리: 바로 말할 덩어리 15–20개만 남기기'];
+      R.notes = [`주간 배분: ${L.ratio}`];
+      R.links = ['claude', 'metrics']; break;
+    case 'metric20':
+      R.steps = ['같은 시리즈의 새 회차 3분 · 무자막 1회 → 이해율 %', '연습 안 한 문장 5개 받아쓰기 (1배 · 최대 2회) → 정확도 %', '이번 주 Q 비율과 Q 원인 비율 (SubTutor 통계)', '입트기 60초 1개 → wpm · 즉답 10문항 중 5초 안에 시작한 수', '지표에 기록 → 다음 주 일정 훑어보기'];
+      R.notes = ['이해율은 같은 시리즈로만 비교 · 하나만 본다면 Q 비율 (영상 난이도·컨디션에 덜 흔들린다)'];
+      R.links = ['metrics']; break;
+    case 'base':
+      R.steps = ['Educators 처음 보는 회차 3–5분 · 자막 없이 1회 → 이해율 %', '같은 구간의 처음 듣는 문장 5개 받아쓰기 → 단어 정확도 %', '입트기 60초 자기소개 1개 → wpm', '즉답 10문항 (Claude에게 학교 상황 질문을 받기) → 5초 안에 말을 시작한 수', '지표에 「기초」로 기록'];
+      R.notes = ['숫자 없이 시작하면 11주 뒤에 늘었는지도 알 수 없다'];
+      R.links = ['metrics', 'claude']; break;
+    case 'light30':
+      R.steps = ['오늘의 훈련 15분', '입트기 1개 (자유 주제) 또는 Pocket으로 저장 문장 연속 듣기'];
+      R.notes = ['쉬는 날도 30분은 한다 — 연속 일수가 끊기는 게 하루 빠지는 것보다 비싸다'];
+      if (HOLI[ds] && phaseOf(ds) === 'term') R.notes.push('과제가 밀렸다면 과제 60분 (선택)');
+      break;
+    case 'asg': case 'asgOpt':
+      R.steps = (b.r === 'asgOpt' ? ['이번 주 과제 목표가 밀렸을 때만 — 아니면 가족 시간으로'] : []).concat(P ? P.steps : []);
+      if (P) { if (P.a.includes('I')) R.notes.push(REQ.I); if (P.a.includes('L')) R.notes.push(REQ.L); }
+      R.notes.push('AI: 주제 · 관점 탐색에만 · 집필은 전부 본인 · 출처는 원문 확인 · 끝에 AI 사용 진술 (쓴 대화는 메모)');
+      if (P && /발표/.test(P.t)) R.notes.push('발표 = 말하기 훈련: 원고 대신 키워드 + 입트기 4·3·2');
+      R.links = ['inbox', 'claude']; break;
+    case 'ready':
+      R.steps = ['Y5–6 첫 주 계획을 영어로 말하면서 쓰기 (첫날 · 학급 약속 · 하루 루틴)', '자기소개 다듬기: 교무실 45초 · 학급 60초 · 학부모 30초', '학교 문서(통신문 · PB4L · 학교 가치) 소리 내어 읽기 10분', 'Kanohi ki te kanohi 면담 질문 5개 정리'];
+      R.links = ['phrases', 'claude']; break;
+    case 'submit':
+      R.steps = ['Learn에 문헌 리뷰 + 핸드아웃 올리기', '단어 수 (3,000 ±10%) · APA 7 · AI 사용 진술 확인', '제출 확인 화면 저장'];
+      R.notes = ['조기 제출 9:00 AM · 최종 마감 1/17(일) 23:59']; break;
+    case 'dday':
+      R.steps = ['첫 인사 3문장 — 워밍업 그대로', '면담마다 한 줄 메모: 아이의 강점 · 목표 · 연락 방법', '못 알아들은 말은 수첩에 — 저녁에 회수'];
+      R.notes = ['Kanohi ki te kanohi (1/28–29) 시간표는 학교에서 확인 → 블록을 길게 눌러 맞추기'];
+      R.links = ['phrases']; break;
+    case 'zoom':
+      R.notes = ['iPhone 캘린더에 있던 일정 (10–11 AM) — 줌 주소는 이메일 확인']; break;
+    case 'fam':
+      R.notes = ['이동 · 설거지 · 산책 중 SubTutor Pocket 오프라인 듣기 — 공부 시간으로 치지 않기']; break;
+    case 'famHol':
+      R.notes = ['아이들과 영어 그림책 · 노래 — 소리 내기 연습 겸', '아이 돌봄 사정에 따라 공부 블록을 길게 눌러 옮기기', 'Pocket 듣기는 추가 시간으로 치지 않기']; break;
+    case 'move':
+      R.notes = ['차 안: Pocket으로 저장 문장 연속 듣기 (한 줄 3번 + 쉼)']; break;
+  }
+  return R;
+}
+const fmtStep = s => { const i = s.indexOf(' · '); const head = i > 0 && i < 10 && /\d/.test(s.slice(0, i)) ? `<small>${esc(s.slice(0, i))}</small>` : ''; const body = head ? s.slice(i + 3) : s; return head + esc(body).replace(/\[([A-Z])\]/g, '<kbd>$1</kbd>'); };
+let promptShift = 0;
+function promptOf(ds) { const T = TOPICS[topicOf(ds)]; const i = ((weekNo(ds) + dow(ds) + promptShift) % T.p.length + T.p.length) % T.p.length; return { T, p: T.p[i] }; }
+function phrasesOfDay(ds) {
+  const n = daysBetween(FIX.planStart, ds) + promptShift;
+  const pick = k => { const sec = PHRASES.find(x => x.k === k); return sec.items[((n % sec.items.length) + sec.items.length) % sec.items.length]; };
+  return [pick('instr'), pick('small'), pick('ask')];
+}
+
+/* ═════════ 7. 화면: 날짜 표시 ═════════ */
+const LOC = {
+  en: { mon: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], mon3: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], wd: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], wd1: ['S', 'M', 'T', 'W', 'T', 'F', 'S'], today: 'Today', cals: 'Calendars', inbox: 'Inbox', allday: 'all-day' },
+  ko: { wd: ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'], wd1: WD_KO, today: '오늘', cals: '캘린더', inbox: '할 일', allday: '종일' },
+};
+const isKo = () => S.set.lang === 'ko';
+const LL = () => LOC[isKo() ? 'ko' : 'en'];
+const titleOf = d => isKo() ? `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${LOC.ko.wd[d.getDay()]}` : `${LOC.en.wd[d.getDay()]} — ${LOC.en.mon3[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+const monthOf = d => isKo() ? `${d.getMonth() + 1}월` : LOC.en.mon[d.getMonth()];
+const monthTitle = d => isKo() ? `${d.getFullYear()}년 ${d.getMonth() + 1}월` : `${LOC.en.mon[d.getMonth()]} ${d.getFullYear()}`;
+function t12(m) { m = ((m % 1440) + 1440) % 1440; const h = Math.floor(m / 60), mm = m % 60; return { t: (h % 12 || 12) + (mm ? ':' + pad(mm) : ''), ap: h < 12 ? 'AM' : 'PM' }; }
+const koT = t => t.includes(':') ? t : t + '시';
+function fmtT(m) { if (S.set.h24) return fromMin(m); const a = t12(m); return isKo() ? `${a.ap === 'AM' ? '오전' : '오후'} ${koT(a.t)}` : `${a.t}${a.ap}`; }
+function fmtRange(s, e) {
+  if (S.set.h24) return `${fromMin(s)} – ${fromMin(e)}`;
+  const a = t12(s), b = t12(e);
+  if (isKo()) { const A = a.ap === 'AM' ? '오전' : '오후', B = b.ap === 'AM' ? '오전' : '오후'; return a.ap === b.ap && e - s < 720 ? `${A} ${koT(a.t)} – ${koT(b.t)}` : `${A} ${koT(a.t)} – ${B} ${koT(b.t)}`; }
+  return a.ap === b.ap && e - s < 720 ? `${a.t} – ${b.t}${b.ap}` : `${a.t}${a.ap} – ${b.t}${b.ap}`;
+}
+function hourLabel(h) {
+  if (S.set.h24) return `${pad(h % 24)}:00`;
+  if (h % 24 === 12) return isKo() ? '정오' : 'Noon';
+  const hh = h % 12 || 12, am = h % 24 < 12;
+  return isKo() ? `${am ? '오전' : '오후'} ${hh}시` : `${hh}<small>${am ? 'AM' : 'PM'}</small>`;
+}
+function capLabel(m) { m = Math.floor(m); if (S.set.h24) return fromMin(m); const a = t12(m); return a.t.includes(':') ? a.t : a.t + ':00'; }
+const CLOCK = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="6" cy="6" r="4.9"/><path d="M6 3.2V6l1.9 1.2" stroke-linecap="round"/></svg>';
+
+/* ═════════ 8. 화면 그리기 ═════════ */
+let today = ymd(new Date());
+let sel = today;
+let dayBlocks = [];
+const grid = $('#grid'), scroller = $('#scroller');
+
+function applyTheme() {
+  const r = document.documentElement;
+  if (S.set.theme === 'light' || S.set.theme === 'dark') r.dataset.theme = S.set.theme; else delete r.dataset.theme;
+}
+function renderAll() { renderHeader(); renderGrid(); updateBadge(); }
+function renderHeader() {
+  const L = LL(), d = parseYMD(sel);
+  $('#monthLabel').textContent = monthOf(d);
+  const start = addDays(sel, -dow(sel));
+  let h = '';
+  for (let i = 0; i < 7; i++) {
+    const x = addDays(start, i), cls = ['dn'];
+    if (i === 0 || i === 6) cls.push('wk');
+    if (x === today) cls.push('today');
+    if (x === sel) cls.push('sel');
+    h += `<button class="wc" data-d="${x}" aria-label="${dLabel(x)}"><span class="wd">${L.wd1[i]}</span><span class="${cls.join(' ')}">${parseYMD(x).getDate()}</span></button>`;
+  }
+  $('#week').innerHTML = h;
+  $('#dTitle').textContent = titleOf(d);
+  $('#dSub').textContent = subtitleFor(sel);
+  const ad = allDayFor(sel).filter(x => !S.set.hidden[x.cat]), el = $('#allday');
+  if (!ad.length) { el.hidden = true; el.innerHTML = ''; }
+  else { el.hidden = false; el.innerHTML = `<span class="adl">${L.allday}</span><div class="adw">${ad.map(x => `<button class="ad" style="--c:${CATS[x.cat].c}" data-adt="${esc(x.t)}">${esc(x.t)}</button>`).join('')}</div>`; }
+  $('#btnToday').textContent = L.today;
+  $('#btnCals').textContent = L.cals;
+  $('#inboxLabel').textContent = L.inbox;
+}
+function subtitleFor(ds) {
+  const parts = [];
+  const dd = daysBetween(ds, S.set.dday);
+  if (dd > 0) parts.push(`부임 D-${dd}`); else if (dd === 0) parts.push('부임 D-day');
+  const next = DEADLINES.find(x => x.at.slice(0, 10) >= ds);
+  if (next) { const n = daysBetween(ds, next.at.slice(0, 10)); parts.push(`${next.id === 'iss' ? 'Issues' : next.id === 'lr1' ? '리뷰 조기' : '리뷰 최종'} ${n ? 'D-' + n : '오늘 마감'}`); }
+  const w = weekNo(ds), ph = phaseOf(ds);
+  if (ph !== 'before' && ph !== 'after') parts.push(w === 0 ? '준비 주' : `${w}주차`);
+  return parts.join(' · ');
+}
+function layoutCols(blocks) {
+  const sorted = blocks.slice().sort((a, b) => a.s - b.s || b.e - a.e);
+  let cluster = [], cols = [], end = -1;
+  const flush = () => { for (const b of cluster) b._cols = cols.length; cluster = []; cols = []; end = -1; };
+  for (const b of sorted) {
+    if (cluster.length && b.s >= end) flush();
+    let ci = cols.findIndex(e => e <= b.s);
+    if (ci < 0) { ci = cols.length; cols.push(b.e); } else cols[ci] = b.e;
+    b._col = ci; cluster.push(b); end = Math.max(end, b.e);
+  }
+  if (cluster.length) flush();
+}
+function stepCount(b) { const R = rtOf(b); if (!R.steps.length) return null; const st = S.steps[b.id] || {}; return { k: R.steps.filter((_, i) => st[i]).length, n: R.steps.length }; }
+function blockHTML(b) {
+  const H = S.set.hourH, px = (b.e - b.s) * H / 60, cat = CATS[b.cat];
+  const size = px >= 38 ? 'l' : px >= 21 ? 'm' : 's';
+  const sc = stepCount(b);
+  const subs = (b.sub || []).filter(([t]) => t > b.s && t < b.e && (t - b.s) * H / 60 > 34 && (b.e - t) * H / 60 > 12)
+    .map(([t, l]) => `<div class="sub" style="--o:${t - b.s}">${esc(fmtT(t))} ${esc(l)}</div>`).join('');
+  return `<div class="ev ${size}${S.done[b.id] ? ' done' : ''}${b.opt ? ' opt' : ''}" data-id="${esc(b.id)}" style="--c:${cat.c};--on:${cat.on};--s:${b.s};--d:${b.e - b.s};--col:${b._col || 0};--cols:${b._cols || 1}">`
+    + `<button class="ck" aria-label="완료 표시"></button>`
+    + `<div class="tx"><div class="t">${esc(b.title)}${b.opt ? ' <em>· 선택</em>' : ''}</div>`
+    + `<div class="tm">${CLOCK}<span>${fmtRange(b.s, b.e)}${sc ? ` · ${sc.k}/${sc.n}` : ''}${b.loc && size === 'l' ? ' · ' + esc(b.loc) : ''}</span></div></div>`
+    + `<span class="left"></span>${subs}<i class="hd a"></i><i class="hd b"></i></div>`;
+}
+function renderGrid(anim) {
+  if (drag) return;
+  grid.style.setProperty('--H', S.set.hourH);
+  dayBlocks = visible(blocksFor(sel));
+  layoutCols(dayBlocks);
+  let h = '';
+  for (let i = 0; i <= 24; i++) h += `<div class="hl" data-h="${i}" style="--h:${i}"><span>${hourLabel(i)}</span></div>`;
+  for (const b of dayBlocks) h += blockHTML(b);
+  h += '<div id="nowLine" hidden><span class="cap"></span><i></i></div>';
+  grid.innerHTML = h;
+  if (anim) { grid.classList.remove('inL', 'inR'); void grid.offsetWidth; grid.classList.add(anim); }
+  updateNow();
+}
+function curAndNext() {
+  if (sel !== today) return { cur: null, next: null };
+  const m = nowI();
+  let cur = null, next = null;
+  for (const b of dayBlocks) {
+    if (b.s <= m && m < b.e) { if (!cur || b.s > cur.s || (b.s === cur.s && b.e < cur.e)) cur = b; }
+    else if (b.s > m && (!next || b.s < next.s)) next = b;
+  }
+  if (cur) { next = null; for (const b of dayBlocks) if (b !== cur && b.s >= cur.e - 0 && b.s > m && (!next || b.s < next.s)) next = b; if (!next) for (const b of dayBlocks) if (b !== cur && b.s > m && (!next || b.s < next.s)) next = b; }
+  return { cur, next };
+}
+function updateNow() {
+  const isT = sel === today, mf = nowF(), mi = Math.floor(mf);
+  const line = $('#nowLine');
+  if (line) { line.hidden = !isT; if (isT) { line.style.setProperty('--m', mf.toFixed(2)); line.querySelector('.cap').textContent = capLabel(mf); } }
+  for (const el of $$('.hl', grid)) el.classList.toggle('near', isT && Math.abs(+el.dataset.h * 60 - mf) < 13);
+  const { cur, next } = curAndNext();
+  for (const el of $$('.ev', grid)) {
+    const on = !!cur && el.dataset.id === cur.id;
+    el.classList.toggle('now', on);
+    if (on) el.querySelector('.left').textContent = `${hhmm(cur.e - mi)} 남음`;
+  }
+  renderNowCard(cur, next, mi);
+  document.title = cur ? `${hhmm(cur.e - mi)} · ${cur.title}` : '영어 타임블록';
+  if (sheetState && sheetState.kind === 'detail' && sheetState.ds === today) { const el = $('#dtNow'); if (el) el.outerHTML = nowBoxHTML(sheetState.id); }
+}
+function renderNowCard(cur, next, mi) {
+  const card = $('#nowCard');
+  if (sel !== today) { card.style.removeProperty('--c'); card.innerHTML = `<span class="nc-back">↩ 오늘로 돌아가기</span><span class="nc-m nc-n">${esc(titleOf(parseYMD(today)))}</span>`; return; }
+  if (cur) {
+    const c = CATS[cur.cat].c, pct = clamp((mi - cur.s) / Math.max(1, cur.e - cur.s) * 100, 0, 100);
+    card.style.setProperty('--c', c);
+    card.innerHTML = `<i class="dot" style="background:${c}"></i><div class="nc-m"><div class="nc-t">${esc(cur.title)}</div><div class="nc-n">${next ? `다음 ${esc(fmtT(next.s))} ${esc(next.title)}` : '오늘 마지막 블록'}</div></div><div class="nc-r"><b>${hhmm(cur.e - mi)}</b><small>남음</small></div><div class="nc-bar"><i style="width:${pct.toFixed(1)}%"></i></div>`;
+  } else if (next) {
+    card.style.removeProperty('--c');
+    card.innerHTML = `<i class="dot" style="background:var(--ink3)"></i><div class="nc-m"><div class="nc-t">빈 시간</div><div class="nc-n">다음 ${esc(fmtT(next.s))} ${esc(next.title)}</div></div><div class="nc-r"><b>${hhmm(next.s - mi)}</b><small>뒤 시작</small></div>`;
+  } else {
+    card.style.removeProperty('--c');
+    card.innerHTML = `<i class="dot" style="background:var(--ink3)"></i><div class="nc-m"><div class="nc-t">오늘 남은 블록이 없어요</div><div class="nc-n">+ 를 눌러 블록 추가</div></div>`;
+  }
+}
+function updateBadge() {
+  let n = 0;
+  for (const g of INBOX) if (g.badge) for (const [id] of g.items) if (!S.inbox[id]) n++;
+  $('#inboxBadge').textContent = n ? String(n) : '';
+}
+function scrollToMin(m, smooth) { const y = 14 + m / 60 * S.set.hourH; scroller.scrollTo({ top: Math.max(0, y), behavior: smooth ? 'smooth' : 'auto' }); }
+function scrollToNow(smooth) { scrollToMin(nowF() - 100, smooth); }
+function go(ds, dir) {
+  if (!ds) return;
+  const prev = sel; sel = ds;
+  renderHeader();
+  renderGrid(dir ? (dir > 0 ? 'inL' : 'inR') : (ds > prev ? 'inL' : ds < prev ? 'inR' : null));
+  if (ds === today && prev !== ds) scrollToNow(false);
+  try { history.replaceState(null, '', ds === today ? location.pathname : '#' + ds); } catch (e) { }
+}
+
+/* ═════════ 9. 시트 ═════════ */
+const layer = $('#layer');
+let sheetState = null, sheetGen = 0;
+function openSheet(html, opts) {
+  opts = opts || {};
+  sheetGen++;
+  const wasOpen = layer.classList.contains('open') && $('.sheet', layer);
+  if (wasOpen) { const sh = $('.sheet', layer); sh.className = 'sheet' + (opts.full ? ' full' : ''); sh.innerHTML = '<div class="sh-grab"></div>' + html; }
+  else {
+    layer.innerHTML = `<div class="dim"></div><div class="sheet${opts.full ? ' full' : ''}" role="dialog" aria-modal="true"><div class="sh-grab"></div>${html}</div>`;
+    $('.dim', layer).addEventListener('click', closeSheet);
+    requestAnimationFrame(() => requestAnimationFrame(() => layer.classList.add('open')));
+  }
+  layer.style.pointerEvents = 'auto';
+  sheetState = opts.state || null;
+  const sh = $('.sheet', layer);
+  if (opts.mount) opts.mount(sh);
+  return sh;
+}
+function closeSheet() {
+  if (!layer.classList.contains('open')) return;
+  layer.classList.remove('open'); sheetState = null;
+  const g = ++sheetGen;
+  setTimeout(() => { if (g === sheetGen) { layer.innerHTML = ''; layer.style.pointerEvents = 'none'; } }, 320);
+}
+function refreshSheet() { if (sheetState && sheetState.refresh) sheetState.refresh(); }
+function keepScroll(fn) { const b = $('.sh-body', layer); const y = b ? b.scrollTop : 0; fn(); const b2 = $('.sh-body', layer); if (b2) b2.scrollTop = y; }
+function actionSheet(title, opts) {
+  return new Promise(res => {
+    const el = document.createElement('div');
+    el.className = 'as-wrap';
+    el.innerHTML = `<div class="as-dim"></div><div class="as"><div class="as-g">${title ? `<div class="as-t">${esc(title)}</div>` : ''}${opts.map((o, i) => `<button data-i="${i}"${o.danger ? ' class="danger"' : ''}>${esc(o.t)}</button>`).join('')}</div><button class="as-c" data-i="-1">취소</button></div>`;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('open')));
+    const done = v => { el.classList.remove('open'); setTimeout(() => el.remove(), 260); res(v); };
+    el.addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) done(+b.dataset.i < 0 ? null : opts[+b.dataset.i].k); else if (e.target.classList.contains('as-dim')) done(null); });
+  });
+}
+let toastTimer = 0;
+function toast(msg, withUndo) {
+  const t = $('#toast');
+  t.innerHTML = `<span>${esc(msg)}</span>${withUndo && undoSnap ? '<button id="undoBtn">되돌리기</button>' : ''}`;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), withUndo ? 4500 : 2400);
+  const u = $('#undoBtn');
+  if (u) u.onclick = () => { undo(); t.classList.remove('show'); toast('되돌렸어요'); };
+}
+function speak(text) {
+  try {
+    const u = new SpeechSynthesisUtterance(String(text).replace(/_{2,}/g, 'something').replace(/…/g, '.'));
+    const vs = speechSynthesis.getVoices();
+    const v = vs.find(x => /en[-_]NZ/i.test(x.lang)) || vs.find(x => /en[-_]AU/i.test(x.lang)) || vs.find(x => /en[-_]GB/i.test(x.lang)) || vs.find(x => /^en/i.test(x.lang));
+    if (v) u.voice = v;
+    u.lang = v ? v.lang : 'en-NZ'; u.rate = 0.95;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch (e) { toast('이 브라우저는 읽어 주기를 지원하지 않아요'); }
+}
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); toast('복사했어요'); }
+  catch (e) {
+    const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast('복사했어요'); } catch (_) { toast('복사하지 못했어요'); }
+    ta.remove();
+  }
+}
+
+/* ── 블록 자세히 ── */
+function findBlock(id, ds) { return blocksFor(ds).find(b => b.id === id) || null; }
+function nowBoxHTML(id) {
+  const b = findBlock(id, today), mi = nowI();
+  if (!b || !(b.s <= mi && mi < b.e)) return '<div id="dtNow"></div>';
+  const pct = clamp((mi - b.s) / Math.max(1, b.e - b.s) * 100, 0, 100);
+  return `<div id="dtNow"><div class="gh">지금 진행 중</div><div class="group dt-now" style="--c:${CATS[b.cat].c}"><div class="r"><b>${hhmm(b.e - mi)}</b><span class="muted small">남음 · ${durText(mi - b.s)} 지남</span></div><div class="prog"><i style="width:${pct.toFixed(1)}%"></i></div></div></div>`;
+}
+const LINKS = { routine: ['루틴 전체 보기', 'routine'], phrases: ['표현 모음', 'phrases'], claude: ['Claude 프롬프트', 'claude'], metrics: ['지표 기록', 'metrics'] };
+function detailHTML(b) {
+  const cat = CATS[b.cat], R = rtOf(b), done = !!S.done[b.id], st = S.steps[b.id] || {};
+  const k = R.steps.filter((_, i) => st[i]).length;
+  let h = `<div class="sh-head"><button data-x>닫기</button><div class="ttl"></div><button data-edit class="b">편집</button></div><div class="sh-body">`;
+  h += `<div class="dt-top" style="--c:${cat.c};--on:${cat.on}"><button class="bigck${done ? ' on' : ''}" data-done aria-label="완료"></button><div><h2 class="${done ? 'strike' : ''}">${esc(b.title)}${b.opt ? ' <span class="muted small">(선택)</span>' : ''}</h2>`
+    + `<div class="dt-meta">${esc(dLabel(b.ds))} · ${esc(fmtRange(b.s, b.e))} · ${durText(b.e - b.s)}</div><div class="dt-meta"><i style="background:${cat.c}"></i>${esc(cat.name)}${b.loc ? ' · ' + esc(b.loc) : ''}${b.mod ? ' · 편집됨' : ''}</div></div></div>`;
+  h += b.ds === today ? nowBoxHTML(b.id) : '';
+  if (R.steps.length) h += `<div class="gh">단계 <b>${k}/${R.steps.length}</b></div><div class="group">${R.steps.map((s, i) => `<div class="chk${st[i] ? ' on' : ''}" data-step="${i}" style="--c:${cat.c}"><span class="bx"></span><span class="lbl">${fmtStep(s)}</span></div>`).join('')}</div>`;
+  if (R.prompt) { const { T, p } = promptOf(b.ds); h += `<div class="gh">오늘의 말하기 · ${esc(T.name)}</div><div class="group pcard"><div class="en">${esc(p)}</div><div class="ko">${esc(T.ko)}</div><div class="acts"><button data-say="${esc(p)}">🔊 듣기</button><button data-copy="${esc(p)}">⧉ 복사 → 입트기 프롬프트</button><button data-shuffle>↻ 다른 상황</button></div></div>`; }
+  if (R.phr) h += `<div class="gh">오늘 쓸 문장 후보 <button data-shuffle class="small" style="color:var(--tint)">↻ 바꾸기</button></div><div class="group">${phrasesOfDay(b.ds).map(([en, ko]) => `<div class="phr"><div class="p"><div>${esc(en)}</div>${ko ? `<small>${esc(ko)}</small>` : ''}</div><button data-say="${esc(en)}" aria-label="듣기">🔊</button></div>`).join('')}</div>`;
+  if (R.notes.length) h += `<div class="gh">메모</div><div class="group txt"><ul>${R.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul></div>`;
+  if (b.note) h += `<div class="gh">내 메모</div><div class="group txt"><p>${esc(b.note).replace(/\n/g, '<br>')}</p></div>`;
+  const links = R.links.filter(x => LINKS[x] || x === 'inbox' || x === 'speak');
+  if (links.length) h += `<div class="group pills">${links.map(x => x === 'speak' ? `<a class="pill" href="${SPEAK_URL}" target="_blank" rel="noopener">입트기 (웹) ↗</a>` : x === 'inbox' ? `<button class="pill" data-inbox>할 일 목록</button>` : `<button class="pill" data-guide="${LINKS[x][1]}">${LINKS[x][0]}</button>`).join('')}</div>`;
+  h += `<div class="gh">시간 조정 · 이 날만</div><div class="group"><div class="row"><span>${b.ds === today && nowI() >= b.s && nowI() < b.e ? '이 블록 늘리고 뒤 블록 밀기' : '이 블록부터 뒤로 밀기'}</span><button class="pill" data-push="10">+10분</button><button class="pill" data-push="15">+15분</button><button class="pill" data-push="30">+30분</button></div></div>`;
+  h += `<div class="group"><button class="btn" data-del>블록 지우기</button>${b.mod && b.kind !== 'extra' ? '<button class="btn" data-reset>이 블록 편집 되돌리기</button>' : ''}</div>`;
+  h += `<p class="muted small" style="margin:4px 6px">블록을 길게 눌러 끌면 시간 옮기기 · 위·아래 가장자리를 끌면 길이 조절</p></div>`;
+  return h;
+}
+function openDetail(b) {
+  if (!b) return;
+  const id = b.id, ds = b.ds;
+  const render = () => { const fresh = findBlock(id, ds); if (!fresh) { closeSheet(); return; } keepScroll(() => openSheet(detailHTML(fresh), { state, mount: el => bindDetail(el, fresh) })); };
+  const state = { kind: 'detail', id, ds, refresh: render };
+  openSheet(detailHTML(b), { state, mount: el => bindDetail(el, b) });
+}
+function bindDetail(el, b) {
+  el.onclick = e => {
+    const t = e.target.closest('[data-done],[data-step],[data-edit],[data-del],[data-reset],[data-push],[data-shuffle]');
+    if (!t) return;
+    if (t.matches('[data-done]')) toggleDone(b.id);
+    else if (t.matches('[data-step]')) {
+      const i = +t.dataset.step, st = S.steps[b.id] || (S.steps[b.id] = {});
+      if (st[i]) delete st[i]; else st[i] = 1;
+      const n = rtOf(b).steps.length, k = Object.keys(st).length;
+      if (n && k === n && !S.done[b.id]) { S.done[b.id] = 1; toast('단계를 다 했어요 — 블록 완료 ✓'); }
+      save(); renderGrid(); refreshSheet();
+    }
+    else if (t.matches('[data-edit]')) openEditor(b, false);
+    else if (t.matches('[data-del]')) deleteBlock(b);
+    else if (t.matches('[data-reset]')) {
+      snap();
+      delete S.inst[b.id];
+      const ents = S.series[b.sid];
+      save(); renderAll();
+      if (ents && ents.length) actionSheet('반복 편집도 있어요', [{ k: 'all', t: '이 블록의 반복 편집도 모두 되돌리기' }, { k: 'one', t: '이 날 편집만 되돌리기' }]).then(v => { if (v === 'all') { delete S.series[b.sid]; for (const id of Object.keys(S.inst)) if (id.slice(0, id.lastIndexOf('@')) === b.sid) delete S.inst[id]; save(); renderAll(); } refreshSheet(); toast('되돌렸어요', true); });
+      else { refreshSheet(); toast('되돌렸어요', true); }
+    }
+    else if (t.matches('[data-push]')) pushFrom(b, +t.dataset.push);
+    else if (t.matches('[data-shuffle]')) { promptShift++; refreshSheet(); }
+  };
+}
+
+/* ── 편집 · 새 블록 ── */
+function openEditor(b, isNew) {
+  const v = b;
+  const cats = Object.entries(CATS).filter(([k]) => k !== 'due');
+  const rep = isNew ? `<div class="gh">반복</div><div class="group"><div class="rep" id="fRep">${[['none', '안 함'], ['wd', `매주 ${WD_KO[dow(v.ds)]}요일`], ['weekdays', '평일 매일'], ['daily', '매일']].map(([k, l], i) => `<button data-rep="${k}" class="${i === 0 ? 'on' : ''}">${l}</button>`).join('')}</div><label class="row" id="fUntilRow" hidden><span>언제까지</span><input type="date" id="fUntil" value="${FIX.planEnd}"></label></div>` : '';
+  const html = `<div class="sh-head"><button data-cancel>취소</button><div class="ttl">${isNew ? '새 블록' : '블록 편집'}</div><button data-ok class="b">${isNew ? '추가' : '완료'}</button></div><div class="sh-body">`
+    + `<div class="group"><input class="inp" id="fT" placeholder="제목" maxlength="60" value="${esc(v.title || '')}"></div>`
+    + `<div class="group"><label class="row"><span>날짜</span><span class="muted">${esc(dLabel(v.ds))}</span></label><label class="row"><span>시작</span><input type="time" id="fS" step="300" value="${fromMin(v.s)}"></label><label class="row"><span>종료</span><input type="time" id="fE" step="300" value="${v.e >= 1440 ? '00:00' : fromMin(v.e)}"></label></div>`
+    + `<div class="gh">캘린더</div><div class="group"><div class="catpick" id="fCat">${cats.map(([k, c]) => `<button class="cp${v.cat === k ? ' on' : ''}" data-cat="${k}" style="--c:${c.c}"><i></i>${esc(c.name)}</button>`).join('')}</div></div>`
+    + rep
+    + `<div class="gh">메모</div><div class="group"><textarea class="inp" id="fN" rows="3" placeholder="메모 (선택)">${esc(v.note || '')}</textarea></div>`
+    + (isNew ? '' : '<p class="muted small" style="margin:4px 6px">반복되는 블록이면 저장할 때 「이 날만 / 매주 같은 요일 / 앞으로 모든 날」을 고를 수 있어요.</p>')
+    + '</div>';
+  openSheet(html, {
+    full: true,
+    mount: el => {
+      let cat = v.cat || 'eng', repV = 'none';
+      el.onclick = e => {
+        const c = e.target.closest('[data-cat]'), r = e.target.closest('[data-rep]');
+        if (c) { cat = c.dataset.cat; $$('.cp', el).forEach(x => x.classList.toggle('on', x === c)); }
+        if (r) { repV = r.dataset.rep; $$('[data-rep]', el).forEach(x => x.classList.toggle('on', x === r)); const ur = $('#fUntilRow', el); if (ur) ur.hidden = repV === 'none'; }
+        if (e.target.closest('[data-cancel]')) closeSheet();
+        if (e.target.closest('[data-ok]')) {
+          const title = $('#fT', el).value.trim() || '새 블록';
+          const s = toMin($('#fS', el).value || '09:00');
+          let en = toMin($('#fE', el).value || '10:00'); if (en === 0) en = 1440;
+          if (!(en > s)) { toast('끝나는 시각이 시작보다 늦어야 해요'); return; }
+          const note = $('#fN', el).value.trim();
+          if (isNew) { const until = $('#fUntil', el) ? $('#fUntil', el).value : null; closeSheet(); addBlock(v.ds, { title, s, e: en, cat, note, rep: repV, until: until || null }); return; }
+          const ch = {};
+          if (title !== b.title) ch.title = title;
+          if (s !== b.s) ch.s = s;
+          if (en !== b.e) ch.e = en;
+          if (cat !== b.cat) ch.cat = cat;
+          if (note !== (b.note || '')) ch.note = note;
+          closeSheet();
+          if (Object.keys(ch).length) commitEdit(b, ch, '바꿀');
+        }
+      };
+      if (isNew) setTimeout(() => { const t = $('#fT', el); if (t) t.focus(); }, 350);
+    },
+  });
+}
+function newBlockAt(m) {
+  const s = clamp(Math.floor(m / 15) * 15, 0, 1380);
+  openEditor({ ds: sel, s, e: Math.min(1440, s + 60), title: '', cat: 'eng', note: '' }, true);
+}
+
+/* ── 캘린더 (보기 · 설정 · 백업) ── */
+function openCals() {
+  const render = () => {
+    const rows = Object.entries(CATS).map(([k, c]) => `<div class="cal-row${S.set.hidden[k] ? '' : ' on'}" data-cal="${k}" style="--c:${c.c}"><span class="cc"></span><span>${esc(c.name)}</span></div>`).join('');
+    const md = merrinDays();
+    const h = `<div class="sh-head"><span style="min-width:52px"></span><div class="ttl">${LL().cals}</div><button data-x class="b">완료</button></div><div class="sh-body">`
+      + `<div class="gh">보이는 캘린더</div><div class="group">${rows}</div>`
+      + `<div class="gh">날짜 (바꾸면 일정이 다시 짜여요)</div><div class="group">`
+      + `<label class="row"><span>Merrin 봉사 시작</span><input type="date" data-set="merrinStart" value="${S.set.merrinStart}"></label>`
+      + `<label class="row"><span>봉사 마지막 날</span><input type="date" data-set="merrinEnd" value="${S.set.merrinEnd}"></label>`
+      + `<label class="row"><span>아이들 방학 시작</span><input type="date" data-set="kidsHoliday" value="${S.set.kidsHoliday}"></label>`
+      + `<label class="row"><span>문헌 리뷰 제출 목표</span><input type="date" data-set="litTarget" value="${S.set.litTarget}"></label>`
+      + `<label class="row"><span>부임일</span><input type="date" data-set="dday" value="${S.set.dday}"></label></div>`
+      + `<p class="muted small" style="margin:-6px 8px 10px">봉사 ${md.length}일 (${md.length ? dLabel(md[0]) + ' – ' + dLabel(md[md.length - 1]) : '없음'}) · 수·금 + 학교 마지막 날. 11/13 Show Day는 휴교라 자동으로 빠져요.</p>`
+      + `<div class="gh">표시</div><div class="group">`
+      + `<label class="row"><span>날짜 · 시각 글자</span><select data-set="lang"><option value="en"${S.set.lang === 'en' ? ' selected' : ''}>English (iOS처럼)</option><option value="ko"${S.set.lang === 'ko' ? ' selected' : ''}>한국어</option></select></label>`
+      + `<label class="row"><span>24시간제</span><input type="checkbox" data-set="h24"${S.set.h24 ? ' checked' : ''}></label>`
+      + `<label class="row"><span>테마</span><select data-set="theme"><option value="auto"${S.set.theme === 'auto' ? ' selected' : ''}>기기 따라</option><option value="light"${S.set.theme === 'light' ? ' selected' : ''}>밝게</option><option value="dark"${S.set.theme === 'dark' ? ' selected' : ''}>어둡게</option></select></label>`
+      + `<label class="row"><span>시간 칸 크기</span><input type="range" min="36" max="150" step="2" data-set="hourH" value="${S.set.hourH}"></label></div>`
+      + `<p class="muted small" style="margin:-6px 8px 10px">시간 칸 크기는 두 손가락으로 벌리거나 오므려도 바뀌어요 (Mac은 ⌃ + 스크롤).</p>`
+      + `<div class="gh">사용법</div><div class="group txt"><ul><li>블록 왼쪽 동그라미 = 완료 (가로줄)</li><li>블록 누르기 = 단계 · 메모 · 남은 시간</li><li>블록 길게 눌러 끌기 = 시간 옮기기 · 위·아래 가장자리 = 길이</li><li>빈 곳 길게 누르기 (Mac은 더블클릭) = 새 블록</li><li>시간 칸을 좌우로 밀기 = 다른 날</li><li>반복 블록은 「이 날만 / 매주 같은 요일 / 앞으로 모든 날」 중에서 고르기</li></ul></div>`
+      + `<div class="gh">기록 (이 기기에만 저장)</div><div class="group">`
+      + `<button class="btn l" data-export>백업 복사 — 다른 기기로 옮길 때</button><button class="btn l" data-import>백업 붙여넣기</button>`
+      + `<button class="btn l" data-reset-day>${esc(dLabel(sel))} 편집 되돌리기</button><button class="btn l" data-reset-edits>모든 일정 편집 되돌리기</button><button class="btn l" data-reset-done>완료 표시 모두 지우기</button><button class="btn l" data-reset-all style="color:var(--tint)">전부 처음으로</button></div>`
+      + `<p class="muted small" style="margin:-6px 8px 14px">아이폰과 Mac은 기록이 따로예요. 「백업 복사」→ 메모·메시지로 보내기 → 다른 기기에서 「백업 붙여넣기」.</p>`
+      + `<div class="gh">확인한 자료</div><div class="group txt small"><ul><li><a href="https://courseinfo.canterbury.ac.nz/GetCourseDetails.aspx?course=TEPI615&occurrence=26X(C)&year=2026" target="_blank" rel="noopener">UC TEPI615 수업 시간표</a> — 11/9–12/20, 월 Workshop A · 목 Workshop B 10–12, Rehua 005, 11/16 온라인</li><li><a href="https://merrin.school.nz/a/jHDdUA8" target="_blank" rel="noopener">Merrin School Term Dates</a> — Term 4 마지막 날 12/15(화) 2시 · Show Day 11/13 · 2027: 1/26 사무실, 1/28–29 면담, 2/1 개학</li><li>Merrin 공개 달력 — Y5/6 캠프 12/2–4 · Y5/6 End of Year Assembly 12/11 9:15</li><li>과제 마감 — Learn 표 (12/14 23:59 · 1/11 9:00 · 1/17 23:59)</li></ul></div>`
+      + '</div>';
+    keepScroll(() => openSheet(h, { full: true, state: { kind: 'cals', refresh: render }, mount: bind }));
+  };
+  const bind = el => {
+    el.onclick = async e => {
+      const c = e.target.closest('[data-cal]');
+      if (c) { const k = c.dataset.cal; if (S.set.hidden[k]) delete S.set.hidden[k]; else S.set.hidden[k] = true; save(); renderAll(); c.classList.toggle('on', !S.set.hidden[k]); return; }
+      if (e.target.closest('[data-export]')) { copyText(JSON.stringify(S)); return; }
+      if (e.target.closest('[data-import]')) { openImport(); return; }
+      if (e.target.closest('[data-reset-day]')) { snap(); for (const id of Object.keys(S.inst)) if (id.endsWith('@' + sel)) delete S.inst[id]; delete S.extra[sel]; save(); renderAll(); toast(`${dLabel(sel)} 편집을 되돌렸어요`, true); return; }
+      if (e.target.closest('[data-reset-edits]')) { const v = await actionSheet('모든 날의 시간 · 제목 편집, 추가한 블록을 지워요. 완료 표시와 지표는 남아요.', [{ k: 'y', t: '모든 일정 편집 되돌리기', danger: true }]); if (v) { snap(); S.inst = {}; S.series = {}; S.extra = {}; S.custom = []; save(); renderAll(); toast('일정 편집을 되돌렸어요', true); } return; }
+      if (e.target.closest('[data-reset-done]')) { const v = await actionSheet('완료 표시와 단계 체크를 모두 지워요.', [{ k: 'y', t: '완료 표시 지우기', danger: true }]); if (v) { snap(); S.done = {}; S.steps = {}; save(); renderAll(); toast('지웠어요', true); } return; }
+      if (e.target.closest('[data-reset-all]')) { const v = await actionSheet('편집 · 완료 · 지표 · 설정을 전부 처음으로 돌려요.', [{ k: 'y', t: '전부 처음으로', danger: true }]); if (v) { snap(); S = freshState(); S.seenHelp = true; save(); applyTheme(); renderAll(); render(); toast('처음으로 돌렸어요', true); } return; }
+    };
+    el.onchange = e => {
+      const t = e.target.closest('[data-set]'); if (!t) return;
+      const k = t.dataset.set;
+      if (t.type === 'checkbox') S.set[k] = t.checked;
+      else if (t.type === 'range') S.set[k] = +t.value;
+      else if (t.type === 'date') { if (!/^\d{4}-\d{2}-\d{2}$/.test(t.value)) return; S.set[k] = t.value; }
+      else S.set[k] = t.value;
+      if (S.set.merrinStart > S.set.merrinEnd) toast('봉사 시작이 마지막 날보다 늦어요');
+      if (S.set.kidsHoliday > S.set.litTarget || S.set.litTarget > S.set.dday) toast('방학 → 리뷰 제출 → 부임 순서가 맞는지 확인해 주세요');
+      save(); applyTheme(); renderAll();
+      if (t.type !== 'range') render();
+    };
+    el.oninput = e => { const t = e.target.closest('[data-set="hourH"]'); if (t) { S.set.hourH = +t.value; grid.style.setProperty('--H', S.set.hourH); } };
+  };
+  render();
+}
+function openImport() {
+  openSheet(`<div class="sh-head"><button data-x>취소</button><div class="ttl">백업 붙여넣기</div><button data-imp class="b">가져오기</button></div><div class="sh-body"><p class="muted small">다른 기기에서 「백업 복사」한 글을 붙여 넣으세요. 지금 이 기기의 기록은 바뀌어요 (되돌리기 가능).</p><div class="group"><textarea class="copybox" id="impBox" placeholder="{&quot;v&quot;:1, ...}"></textarea></div></div>`, {
+    full: true, mount: el => {
+      el.onclick = e => {
+        if (!e.target.closest('[data-imp]')) return;
+        try {
+          const o = JSON.parse($('#impBox', el).value);
+          if (!o || typeof o !== 'object' || !o.set) throw new Error('bad');
+          snap(); S = normalize(o); save(); applyTheme(); closeSheet(); renderAll(); toast('가져왔어요', true);
+        } catch (err) { toast('백업 글이 아니에요 — 전체를 붙여 넣었는지 확인'); }
+      };
+    },
+  });
+}
+
+/* ── 할 일 (Inbox) ── */
+function deadlineBox(x) {
+  const at = atDate(x.at), ms = at - new Date();
+  if (ms <= 0) return `<div class="dd" style="--c:var(--ink3)"><b>끝</b><small>${esc(dLabel(x.at.slice(0, 10)))}</small></div>`;
+  const days = daysBetween(today, x.at.slice(0, 10));
+  if (ms < 48 * 3600e3) { const m = Math.ceil(ms / 60000); return `<div class="dd"><b>${hhmm(m)}</b><small>남음</small></div>`; }
+  return `<div class="dd"><b>D-${days}</b><small>${esc(dLabel(x.at.slice(0, 10)))}</small></div>`;
+}
+function openInbox() {
+  const render = () => {
+    let h = `<div class="sh-head"><span style="min-width:52px"></span><div class="ttl">${LL().inbox}</div><button data-x class="b">완료</button></div><div class="sh-body">`;
+    h += `<div class="gh">과제 마감 (Learn)</div><div class="group">${DEADLINES.map(x => `<div class="dl-row">${deadlineBox(x)}<div class="ii"><b>${esc(x.t)}</b> <span class="muted small">${esc(x.w)}</span><small>${esc(dLabel(x.at.slice(0, 10)))} ${x.at.slice(11)} · ${esc(x.note)}</small></div></div>`).join('')}`
+      + `<div class="dl-row"><div class="dd" style="--c:var(--ink2)"><b>?</b><small>확인</small></div><div class="ii"><b>Issues 발표</b><small>마감 전 수업 시간에 · 날짜 확인 필요 (월·목 수업)</small></div></div>`
+      + `<div class="dl-row"><div class="dd" style="--c:var(--ink2)"><b>?</b><small>확인</small></div><div class="ii"><b>문헌 리뷰 동료 토론 진행</b><small>핸드아웃으로 진행 · 날짜 확인 필요</small></div></div></div>`;
+    for (const g of INBOX) {
+      const left = g.items.filter(([id]) => !S.inbox[id]).length;
+      h += `<div class="gh">${esc(g.h)} <b>${g.items.length - left}/${g.items.length}</b></div><div class="group">${g.items.map(([id, t]) => `<div class="chk${S.inbox[id] ? ' on' : ''}" data-ib="${id}"><span class="bx"></span><span class="lbl">${esc(t)}</span></div>`).join('')}</div>`;
+    }
+    const up = [];
+    for (let d = today, i = 0; i < 45; i++, d = addDays(d, 1)) for (const ev of SCHOOL) if (ev.d === d) up.push([d, ev.t]);
+    if (up.length) h += `<div class="gh">다가오는 Merrin 일정</div><div class="group">${up.slice(0, 8).map(([d, t]) => `<div class="sr" data-goto="${d}" style="--c:${CATS.mer.c}"><i></i><div><b>${esc(t.replace(/^Merrin: /, ''))}</b><small>${esc(dLabel(d))}</small></div></div>`).join('')}</div>`;
+    h += '</div>';
+    keepScroll(() => openSheet(h, { full: true, state: { kind: 'inbox', refresh: render }, mount: el => {
+      el.onclick = e => {
+        const c = e.target.closest('[data-ib]');
+        if (c) { const id = c.dataset.ib; if (S.inbox[id]) delete S.inbox[id]; else S.inbox[id] = 1; save(); updateBadge(); render(); return; }
+        const g = e.target.closest('[data-goto]');
+        if (g) { closeSheet(); go(g.dataset.goto); scrollToMin(7 * 60, true); }
+      };
+    } }));
+  };
+  render();
+}
+
+/* ── 가이드 (계획 · 루틴 · 표현 · Claude · 지표) ── */
+let guideTab = 'plan';
+function phaseList() {
+  return [
+    { k: 'prep', name: '준비 주', from: FIX.planStart, to: addDays(FIX.course1, -1), eng: '1–2시간', focus: '기초 측정 · 과제 주제 · 루틴 한 번씩' },
+    { k: 'term', name: '학기', from: FIX.course1, to: addDays(S.set.kidsHoliday, -1), eng: '1시간 25–35분 + 봉사 8시간 (수·금)', focus: '수업 월·목 · Merrin 수·금 · Issues 12/14 · 회수 루프' },
+    { k: 'hol', name: '방학 + 문헌 리뷰', from: S.set.kidsHoliday, to: addDays(S.set.litTarget, -1), eng: '2시간 5분', focus: '문헌 리뷰 하루 2.5시간 · 실전 45분 · 성탄·연말은 가볍게' },
+    { k: 'ready', name: '부임 준비', from: S.set.litTarget, to: addDays(S.set.dday, -1), eng: '2시간 15분 + 준비 1시간', focus: '고속 적응 · 모의수업 · 학부모 면담 리허설 · 첫 주 계획' },
+    { k: 'dday', name: '부임', from: S.set.dday, to: FIX.planEnd, eng: '워밍업 + 회수', focus: 'Kanohi ki te kanohi 면담 · 2/1 개학' },
+  ].filter(p => p.from <= p.to);
+}
+function engDoneOn(ds) { return blocksFor(ds).some(b => b.cat === 'eng' && S.done[b.id]); }
+function streak() { let n = 0, d = today; if (!engDoneOn(d)) d = addDays(d, -1); for (let i = 0; i < 120 && d >= FIX.planStart && engDoneOn(d); i++, d = addDays(d, -1)) n++; return n; }
+function weekTotals(ds) {
+  const start = addDays(ds, -dow(ds)), tot = {};
+  let eAll = 0, eDone = 0;
+  for (let i = 0; i < 7; i++) for (const b of blocksFor(addDays(start, i))) {
+    if (b.opt) continue;
+    const m = b.e - b.s; tot[b.cat] = (tot[b.cat] || 0) + m;
+    if (b.cat === 'eng') { eAll += m; if (S.done[b.id]) eDone += m; }
+  }
+  return { tot, eAll, eDone, start };
+}
+function guidePlan() {
+  const L = levelOf(sel), ph = phaseOf(sel), w = weekNo(sel), wt = weekTotals(sel), md = merrinDays();
+  const maxM = Math.max(1, ...['eng', 'asg', 'uni', 'mer'].map(k => wt.tot[k] || 0));
+  const phases = phaseList();
+  const cur = phases.find(p => p.k === ph);
+  let h = `<div class="group"><div class="stat"><div><b>${streak()}일</b><small>🔥 연속 (영어 완료)</small></div><div><b>${durText(wt.eAll)}</b><small>이번 주 영어</small></div><div><b>${wt.eAll ? Math.round(wt.eDone / wt.eAll * 100) : 0}%</b><small>영어 완료</small></div></div>`
+    + `<div class="txt"><b>${cur ? esc(cur.name) : '계획 밖'}</b>${cur ? ` <span class="muted small">${esc(dLabel(cur.from))} – ${esc(dLabel(cur.to))}</span>` : ''}<br>${w ? `${w}주차` : '준비 주'} · ${esc(L.name)} — ${esc(L.focus)}</div>`
+    + `<div class="bars">${['eng', 'asg', 'uni', 'mer'].map(k => `<div class="br"><span>${esc(CATS[k].name)}</span><div class="tr"><i style="width:${((wt.tot[k] || 0) / maxM * 100).toFixed(0)}%;background:${CATS[k].c}"></i></div><span>${durText(wt.tot[k] || 0)}</span></div>`).join('')}</div></div>`;
+  h += `<div class="gh">핵심 판단</div><div class="group txt"><ol>`
+    + `<li><b>막는 것은 어휘가 아니라 소리 해독 속도.</b> 10년 가르치고 영어로 석사를 하는 중이면 단어와 문장 구조는 충분하다. 못 알아듣는 40%는 거의 전부 NZ 모음 · 축약 · 말 속도 · 관용어 · 다자 대화 쪽.</li>`
+    + `<li><b>말하기 병목은 정확도가 아니라 인출 속도.</b> 새 표현보다 아는 표현을 자동화한다 (4·3·2 줄여 말하기, 매일 최소 10분).</li>`
+    + `<li><b>가장 큰 자산은 Merrin 봉사</b> — ${md.length}일 · 약 ${Math.round(md.reduce((a, d) => a + (d === FIX.schoolLast ? 6.25 : 8), 0))}시간 (${md.length ? esc(dLabel(md[0])) + ' – ' + esc(dLabel(md[md.length - 1])) : '–'}). SubTutor는 그날 못 알아들은 것을 회수하는 장치.</li>`
+    + `<li><b>과제는 일찍 끝낼수록 영어 시간이 는다.</b> Issues 12/10 제출 · 문헌 리뷰 1/11 9:00 조기 제출이 목표 → 1/11–1/27은 영어 · 부임 준비 전념.</li></ol></div>`;
+  h += `<div class="gh">단계</div><div class="group tw"><table class="t"><tr><th>단계</th><th>기간</th><th>영어 / 일</th><th>중심</th></tr>${phases.map(p => `<tr class="${p.k === ph ? 'cur' : ''}"><td><b>${esc(p.name)}</b></td><td class="num">${esc(dLabel(p.from))}<br>– ${esc(dLabel(p.to))}</td><td>${esc(p.eng)}</td><td>${esc(p.focus)}</td></tr>`).join('')}</table></div>`;
+  h += `<div class="gh">4주마다 올리는 것</div><div class="group tw"><table class="t"><tr><th>구간</th><th>속도 사다리</th><th>1차 청취</th><th>4·3·2</th><th>자료 · 배분</th></tr>${LEVELS.slice(1).map(l => `<tr class="${l === L ? 'cur' : ''}"><td><b>${esc(l.name)}</b></td><td class="num">${esc(l.ladder)}</td><td>${esc(l.first)}</td><td>${esc(l.t432)}</td><td>${esc(l.mat)}<br><span class="muted">${esc(l.ratio)}</span></td></tr>`).join('')}</table></div>`;
+  h += `<p class="muted small" style="margin:-6px 8px 10px">5주차(12/7~)에 대본 없는 실제 발화(뉴스 · 다큐 · 학교 소개 영상)를 넣는다. 시트콤은 또박또박 말하고 웃음 포인트에서 쉬어 주지만, 실제 교무실은 그렇지 않다.</p>`;
+  h += `<div class="gh">1월에 할 수 있어야 하는 것</div><div class="group txt"><ol><li>학생에게 활동을 설명하고, 이해했는지 확인하며 다시 설명하기</li><li>학생의 말을 듣고 핵심을 되물어 확인하기</li><li>동료의 업무 지시에서 무엇을 · 언제 · 누가 하는지 확인하기</li><li>회의에서 의견 → 이유 → 예시 → 제안을 60–90초로 말하기</li><li>5–10분 모의수업 중 예상 못 한 질문에 대응하기</li><li>1/28–29 학부모 면담에서 자기소개하고 아이의 강점 · 목표 묻기</li></ol></div>`;
+  h += `<div class="gh">병목과 11주 안의 변화</div><div class="group tw"><table class="t"><tr><th>병목</th><th>증상</th><th>바뀌는가</th></tr>`
+    + `<tr><td>NZ 모음 이동</td><td>pen→pin, fish→fush, back→beck, yes→yis</td><td>바뀐다 · 2–3주 집중</td></tr><tr><td>축약 · 연음</td><td>didja, gonna, have a bit of a look, d’you reckon</td><td>바뀐다 · 패턴 50개 남짓</td></tr><tr><td>말 속도</td><td>시트콤 180–220 wpm, 교무실 잡담은 더 빠름</td><td>부분적 · 익숙한 영역에서만</td></tr><tr><td>키위 · 학교 관용어</td><td>sweet as, chur, heaps, keen, yeah nah, morning tea, whānau, WALT</td><td>바뀐다 · 목록이 유한</td></tr><tr><td>다자 대화</td><td>겹쳐 말하기, 끼어들 지점을 못 찾음</td><td>가장 느림 · 현장 노출로만</td></tr></table></div>`;
+  h += `<div class="gh">현실적인 도착 지점</div><div class="group txt"><p>시트콤 · 학교 영역 청취 85%, 교실 · 교무실 고빈도 발화 250개 자동화, 짧은 회의 발언은 막힘 없이. 긴 논증을 즉석에서 펴는 능력은 11주로 안정되지 않는다 — 대신 첫 주에 버벅거리지 않는 상태는 확실히 만들 수 있다.</p></div>`;
+  h += `<div class="gh">흔한 실수 6가지</div><div class="group txt"><ol><li><b>이미 이해한 것을 또 듣는다</b> — 시간은 Q 표시한 줄에만.</li><li><b>자막을 켜고 1차 청취</b> — 그러면 읽기 연습. 1차는 반드시 무자막.</li><li><b>느린 배속에서 끝낸다</b> — 사다리는 반드시 1배 이상으로 끝.</li><li><b>입력만 쌓고 출력을 미룬다</b> — 말하기는 별개의 근육, 매일 최소 10분.</li><li><b>완벽한 문장을 기다린다</b> — 교무실에선 정확도보다 타이밍.</li><li><b>저장 문장 수 · 같은 영상 점수로 실력을 착각</b> — 매주 새 자료 · 새 상황으로 확인.</li></ol></div>`;
+  h += `<div class="gh">과제 전략</div><div class="group txt"><ul><li><b>주제를 인접하게</b> — 문헌이 겹치면 2편을 1.5편 노력으로. 내년에 실제로 쓸 주제면 부임에도 남는다: EAL · 다언어 학습자 지원, 또는 structured literacy 논쟁 (Issues 안내문 예시에도 있음).</li><li><b>발표 · 토론 = 말하기 훈련</b> — 원고 대신 키워드 + 입트기 4·3·2. 읽는 발표와 말하는 발표는 청중이 바로 안다.</li><li><b>AI 규정</b> — 주제 · 관점 탐색에만. 집필은 전부 본인, 출처는 원문 확인, 끝에 AI 사용 진술 (채점 안 함).</li></ul></div>`;
+  return h;
+}
+function routineCard(title, where, r) {
+  const R = rtOf({ r, ds: sel, generic: true });
+  return `<div class="gh">${esc(title)} <span class="small">${esc(where)}</span></div><div class="group txt"><ol>${R.steps.map(s => `<li>${fmtStep(s)}</li>`).join('')}</ol>${R.notes.length ? `<p class="muted small" style="margin-top:8px">${R.notes.map(esc).join('<br>')}</p>` : ''}</div>`;
+}
+function guideRoutine() {
+  const L = levelOf(sel);
+  let h = `<div class="group txt"><b>${esc(L.name)}</b> · 사다리 ${esc(L.ladder)} · 4·3·2 ${esc(L.t432)} · 1차 청취 ${esc(L.first)}<br><span class="muted small">어떤 날이든 30분짜리는 반드시 한다 — 연속 일수가 끊기는 것이 하루 빠지는 것보다 훨씬 비싸다.</span></div>`;
+  h += routineCard('영어 60 · 표준', '화 · 방학 · 부임 준비', 'eng60');
+  h += routineCard('영어 45 · 수업 전 듣기', '월 · 목 도서관', 'pre45');
+  h += routineCard('영어 저녁 30', '평일 20:00', 'eve30');
+  h += routineCard('출근 워밍업', '수 · 금 차 안', 'merwarm');
+  h += routineCard('Merrin 봉사 미션', '수 · 금 8–4', 'merrin');
+  h += routineCard('봉사 회수 25', '귀가 직후', 'merrec');
+  h += routineCard('수업 회수 20', '월 · 목 점심 뒤', 'unirec');
+  h += routineCard('영어 실전 45', '방학 · 부임 준비', 'real45');
+  h += routineCard('주간 정리 90', '토 9:00', 'week90');
+  h += routineCard('주간 측정 20', '일 20:00', 'metric20');
+  h += `<div class="gh">요일별 말하기 주제</div><div class="group tw"><table class="t"><tr><th>요일</th><th>학기 (봉사 날은 봉사 경험)</th><th>방학 · 부임 준비</th></tr>${[1, 2, 3, 4, 5, 6, 0].map(d => `<tr><td>${WD_KO[d]}</td><td>${esc(TOPICS[['retry', 'instr', 'explain', 'merrin', 'meeting', 'merrin', 'mock'][d]].name)}</td><td>${esc(TOPICS[['retry', 'instr', 'explain', 'parent', 'meeting', 'small', 'mock'][d]].name)}</td></tr>`).join('')}</table></div>`;
+  h += `<div class="gh">프롬프트 모음 (입트기에 넣기)</div>`;
+  for (const [k, T] of Object.entries(TOPICS)) h += `<details class="group"><summary class="row"><span><b>${esc(T.name)}</b> <span class="muted small">${esc(T.ko)}</span></span></summary>${T.p.map(p => `<div class="phr"><div class="p"><div>${esc(p)}</div></div><button data-copy="${esc(p)}" aria-label="복사">⧉</button></div>`).join('')}</details>`;
+  h += `<div class="gh">SubTutor 단축키</div><div class="group dl"><dt><kbd>A</kbd> <kbd>D</kbd></dt><dd>이전 · 다음 줄</dd><dt><kbd>F</kbd></dt><dd>다시 듣기</dd><dt><kbd>S</kbd> · <kbd>X</kbd></dt><dd>같은 속도 반복 · 속도 사다리 반복</dd><dt><kbd>Q</kbd></dt><dd>못 알아들음 (빨간 별)</dd><dt><kbd>E</kbd> · Enter</dt><dd>저장</dd><dt><kbd>T</kbd> 누르고 있기</dt><dd>한국어 뜻</dd><dt><kbd>V</kbd></dt><dd>가린 자막 보기</dd><dt><kbd>W</kbd> · <kbd>R</kbd></dt><dd>따라하기 · 더빙</dd><dt><kbd>P</kbd></dt><dd>자동 멈춤</dd><dt><kbd>[</kbd> <kbd>]</kbd> <kbd>\\</kbd></dt><dd>속도 −0.1 · +0.1 · 원래대로</dd></div>`;
+  return h;
+}
+function phrRow(en, ko, say) { return `<div class="phr"><div class="p"><div>${esc(en)}</div>${ko ? `<small>${esc(ko)}</small>` : ''}</div>${say ? `<button data-say="${esc(en)}" aria-label="듣기">🔊</button>` : ''}</div>`; }
+function guidePhr() {
+  let h = `<p class="muted small" style="margin:0 6px 10px">🔊는 기기 음성으로 읽어 줘요 (뉴질랜드 음성이 없으면 호주·영국 음성). 따라 말하기용.</p>`;
+  for (const sec of PHRASES) h += `<div class="gh">${esc(sec.h)}</div><div class="group">${sec.items.map(([en, ko]) => phrRow(en, ko, true)).join('')}</div>`;
+  h += `<div class="gh">NZ 모음 — 귀가 놓치는 이유</div><div class="group">${VOWELS.map(([a, b]) => phrRow(a, b, false)).join('')}</div>`;
+  h += `<div class="gh">자주 놓치는 축약</div><div class="group">${REDUCE.map(([a, b]) => phrRow(a, b, false)).join('')}</div>`;
+  h += `<div class="gh">키위 표현</div><div class="group dl">${KIWI.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('')}</div>`;
+  h += `<div class="gh">학교에서 듣는 테레오</div><div class="group dl">${REO.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('')}</div>`;
+  h += `<div class="gh">학교 말</div><div class="group dl">${SCHOOLW.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('')}</div>`;
+  return h;
+}
+function guideClaude() {
+  let h = `<div class="group txt small"><p>SubTutor에 없는 것은 <b>대화 · 교정 · 설명</b>. 복사해서 Claude에 붙이고 [ ] 부분만 채우세요. 가장 값이 큰 것은 ③ — 입트기는 내가 말한 것을 기록할 뿐 더 나은 버전을 보여 주지 못한다.</p></div>`;
+  PROMPTS.forEach((p, i) => { h += `<div class="gh">${esc(p.t)} <button data-copyp="${i}" class="small" style="color:var(--tint);font-weight:600">⧉ 복사</button></div><div class="group txt small"><p class="muted">${esc(p.use)}</p><p style="white-space:pre-wrap">${esc(p.text)}</p></div>`; });
+  return h;
+}
+function fmtNum(v) { return v == null || v === '' || isNaN(v) ? '–' : String(Math.round(v * 100) / 100); }
+function spark(tk, rows) {
+  const pts = rows.filter(r => r[tk.k] != null && r[tk.k] !== '' && !isNaN(r[tk.k]));
+  const W = 110, Hh = 28, vals = pts.map(r => +r[tk.k]).concat(tk.t);
+  if (tk.base != null) vals.push(tk.base);
+  const lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || 1;
+  const y = v => (Hh - 3 - (v - lo) / span * (Hh - 6)).toFixed(1);
+  const tgt = tk.t[TDATES.findIndex(d => d >= today)] ?? tk.t[tk.t.length - 1];
+  const line = pts.length > 1 ? `<polyline fill="none" stroke="var(--tint)" stroke-width="1.8" points="${pts.map((r, i) => `${(i / (pts.length - 1) * (W - 6) + 3).toFixed(1)},${y(+r[tk.k])}`).join(' ')}"/>` : pts.length === 1 ? `<circle cx="${W / 2}" cy="${y(+pts[0][tk.k])}" r="2.5" fill="var(--tint)"/>` : '';
+  return `<svg class="spark" width="${W}" height="${Hh}" viewBox="0 0 ${W} ${Hh}" aria-hidden="true"><line x1="0" x2="${W}" y1="${y(tgt)}" y2="${y(tgt)}" stroke="var(--ink3)" stroke-dasharray="3 3"/>${line}</svg>`;
+}
+function guideMetrics() {
+  const rows = S.metrics.slice().sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : 0);
+  const last = rows[rows.length - 1] || {};
+  let h = `<div class="group txt small"><p>측정은 <b>주 1회 · 일요일 20분</b>. 이해율은 같은 시리즈로만 비교. 하나만 본다면 <b>Q 비율</b> — 이해율은 영상 난이도에, wpm은 컨디션에 흔들리지만 못 알아들은 줄의 수는 정직하다.</p></div>`;
+  h += `<div class="gh">기록하기</div><div class="group"><div class="mform"><label style="grid-column:1/-1">날짜<input type="date" id="mD" value="${today}"></label>${TARGETS.map(t => `<label>${esc(t.name)} (${esc(t.unit)})<input type="number" inputmode="decimal" step="any" data-mk="${t.k}" placeholder="${t.base != null ? '기초 ' + t.base : ''}"></label>`).join('')}</div><button class="btn" data-msave>저장</button></div>`;
+  h += `<div class="gh">목표</div><div class="group tw"><table class="t"><tr><th>지표</th><th>최근</th><th>12/6</th><th>1/3</th><th>1/24</th><th></th></tr>${TARGETS.map(t => {
+    const v = last[t.k]; const hit = i => v != null && v !== '' && !isNaN(v) && (t.hi ? +v >= t.t[i] : +v <= t.t[i]);
+    return `<tr><td>${esc(t.name)}<br><span class="muted">${t.base != null ? '기초 ' + t.base + t.unit : '기초 측정 필요'}</span></td><td class="num"><b>${fmtNum(v)}</b></td>${t.t.map((x, i) => `<td class="num${hit(i) ? ' ok' : ''}">${x}${hit(i) ? ' ✓' : ''}</td>`).join('')}<td>${spark(t, rows)}</td></tr>`;
+  }).join('')}</table></div>`;
+  if (rows.length) h += `<div class="gh">기록 ${rows.length}개</div><div class="group">${rows.slice().reverse().map(r => `<div class="row"><span><b>${esc(dLabel(r.d))}</b> <span class="muted small">${TARGETS.filter(t => r[t.k] != null && r[t.k] !== '').map(t => `${t.name.split(' ')[0]} ${fmtNum(r[t.k])}${t.unit}`).join(' · ')}</span></span><button class="pill" data-mdel="${esc(r.d)}">지우기</button></div>`).join('')}</div>`;
+  return h;
+}
+function openGuide(tab) {
+  if (tab) guideTab = tab;
+  const tabs = [['plan', '계획'], ['routine', '루틴'], ['phrases', '표현'], ['claude', 'Claude'], ['metrics', '지표']];
+  const render = keep => {
+    const body = guideTab === 'plan' ? guidePlan() : guideTab === 'routine' ? guideRoutine() : guideTab === 'phrases' ? guidePhr() : guideTab === 'claude' ? guideClaude() : guideMetrics();
+    const h = `<div class="sh-head"><span style="min-width:52px"></span><div class="ttl">가이드</div><button data-x class="b">완료</button></div><div class="sh-body"><div class="seg">${tabs.map(([k, l]) => `<button data-tab="${k}" class="${k === guideTab ? 'on' : ''}">${l}</button>`).join('')}</div>${body}</div>`;
+    const fn = () => openSheet(h, { full: true, state: { kind: 'guide', refresh: () => render(true) }, mount: bindGuide });
+    if (keep) keepScroll(fn); else fn();
+  };
+  const bindGuide = el => {
+    el.onclick = e => {
+      const tb = e.target.closest('[data-tab]');
+      if (tb) { guideTab = tb.dataset.tab; render(false); return; }
+      const cp = e.target.closest('[data-copyp]');
+      if (cp) { copyText(PROMPTS[+cp.dataset.copyp].text); return; }
+      if (e.target.closest('[data-msave]')) {
+        const d = $('#mD', el).value || today, r = { d };
+        let any = false;
+        for (const inp of $$('[data-mk]', el)) if (inp.value !== '') { const v = parseFloat(inp.value); if (!isNaN(v)) { r[inp.dataset.mk] = v; any = true; } }
+        if (!any) { toast('숫자를 하나 이상 넣어 주세요'); return; }
+        snap();
+        const old = S.metrics.find(x => x.d === d);
+        if (old) Object.assign(old, r); else S.metrics.push(r);
+        save(); render(true); toast('기록했어요', true); return;
+      }
+      const md = e.target.closest('[data-mdel]');
+      if (md) { snap(); S.metrics = S.metrics.filter(x => x.d !== md.dataset.mdel); save(); render(true); toast('지웠어요', true); }
+    };
+  };
+  render(false);
+}
+
+/* ── 달 보기 · 검색 ── */
+function closeOverlay() { const o = $('.full-ov'); if (o) o.remove(); }
+function openMonth() {
+  closeOverlay();
+  const months = [];
+  for (let d = new Date(2026, 10, 1); d <= new Date(2027, 1, 1); d.setMonth(d.getMonth() + 1)) months.push(new Date(d));
+  const sm = parseYMD(sel); if (!months.some(m => m.getFullYear() === sm.getFullYear() && m.getMonth() === sm.getMonth())) months.push(new Date(sm.getFullYear(), sm.getMonth(), 1));
+  months.sort((a, b) => a - b);
+  const deadlineDays = new Set(DEADLINES.map(x => x.at.slice(0, 10)));
+  let h = '';
+  for (const m of months) {
+    const y = m.getFullYear(), mo = m.getMonth(), first = new Date(y, mo, 1).getDay(), n = new Date(y, mo + 1, 0).getDate();
+    const isCur = parseYMD(today).getMonth() === mo && parseYMD(today).getFullYear() === y;
+    h += `<div class="mo" data-m="${y}-${pad(mo + 1)}"><h3 class="${isCur ? 'cur' : ''}">${esc(monthTitle(m))}</h3><div class="mg">${LL().wd1.map(x => `<div class="wh">${x}</div>`).join('')}`;
+    for (let i = 0; i < first; i++) h += '<div class="pad"></div>';
+    for (let dd = 1; dd <= n; dd++) {
+      const ds = `${y}-${pad(mo + 1)}-${pad(dd)}`, wd = (first + dd - 1) % 7;
+      const dots = [];
+      if (isMerrinDay(ds)) dots.push(CATS.mer.c);
+      if (hasClass(ds)) dots.push(CATS.uni.c);
+      if (deadlineDays.has(ds) || HOLI[ds]) dots.push(CATS.due.c);
+      if (ds >= FIX.planStart && ds <= today && engDoneOn(ds)) dots.push(CATS.eng.c);
+      h += `<button data-d="${ds}" class="${wd === 0 || wd === 6 ? 'wk' : ''}${ds === today ? ' today' : ''}${ds === sel ? ' sel' : ''}"><span class="n">${dd}</span><span class="dots">${dots.map(c => `<i style="background:${c}"></i>`).join('')}</span></button>`;
+    }
+    h += '</div></div>';
+  }
+  const ov = document.createElement('div');
+  ov.className = 'full-ov';
+  ov.innerHTML = `<div class="fo-head"><button data-close>‹ ${isKo() ? '닫기' : 'Back'}</button><b>${isKo() ? '달 보기' : 'Months'}</b><button data-today>${LL().today}</button></div><div class="fo-body">${h}<div class="legend"><span><i style="background:${CATS.mer.c}"></i>Merrin 봉사</span><span><i style="background:${CATS.uni.c}"></i>수업</span><span><i style="background:${CATS.due.c}"></i>마감 · 휴일</span><span><i style="background:${CATS.eng.c}"></i>영어 완료한 날</span></div></div>`;
+  document.body.appendChild(ov);
+  const tgt = $(`[data-m="${sel.slice(0, 7)}"]`, ov);
+  if (tgt) { const body = $('.fo-body', ov); body.scrollTop = tgt.offsetTop - body.offsetTop; }
+  ov.onclick = e => {
+    if (e.target.closest('[data-close]')) { ov.remove(); return; }
+    if (e.target.closest('[data-today]')) { ov.remove(); go(today); scrollToNow(true); return; }
+    const b = e.target.closest('[data-d]');
+    if (b) { ov.remove(); go(b.dataset.d); if (b.dataset.d !== today) scrollToMin(7 * 60); }
+  };
+}
+function openSearch() {
+  closeOverlay();
+  const ov = document.createElement('div');
+  ov.className = 'full-ov';
+  ov.innerHTML = `<div class="fo-head"><div class="srch"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--ink2)"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.6 15.6 4.9 4.9"/></svg><input id="q" type="search" placeholder="블록 검색 (예: Merrin, 실전, 측정)" autocomplete="off"></div><button data-close>취소</button></div><div class="fo-body" id="sres"><p class="muted small" style="padding:16px">${esc(dLabel(FIX.planStart))} – ${esc(dLabel(FIX.planEnd))} 사이의 블록과 종일 일정을 찾아요.</p></div>`;
+  document.body.appendChild(ov);
+  const q = $('#q', ov), res = $('#sres', ov);
+  setTimeout(() => q.focus(), 60);
+  let timer = 0;
+  q.oninput = () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      const s = q.value.trim().toLowerCase();
+      if (!s) { res.innerHTML = ''; return; }
+      let out = '', count = 0;
+      for (let d = FIX.planStart; d <= FIX.planEnd && count < 200; d = addDays(d, 1)) {
+        const hits = blocksFor(d).filter(b => (b.title + ' ' + (b.note || '') + ' ' + (b.loc || '')).toLowerCase().includes(s)).map(b => `<div class="sr" data-d="${d}" data-m="${b.s}" style="--c:${CATS[b.cat].c}"><i></i><div><b>${esc(b.title)}</b><small>${esc(fmtRange(b.s, b.e))}${S.done[b.id] ? ' · 완료' : ''}</small></div></div>`);
+        const ad = allDayFor(d).filter(x => x.t.toLowerCase().includes(s)).map(x => `<div class="sr" data-d="${d}" data-m="420" style="--c:${CATS[x.cat].c}"><i></i><div><b>${esc(x.t)}</b><small>종일</small></div></div>`);
+        if (hits.length || ad.length) { out += `<div class="sr-h">${esc(dLabel(d))}</div>` + ad.join('') + hits.join(''); count += hits.length + ad.length; }
+      }
+      res.innerHTML = out || '<p class="muted small" style="padding:16px">찾는 블록이 없어요.</p>';
+    }, 120);
+  };
+  ov.onclick = e => {
+    if (e.target.closest('[data-close]')) { ov.remove(); return; }
+    const r = e.target.closest('.sr[data-d]');
+    if (r) { ov.remove(); go(r.dataset.d); scrollToMin(+r.dataset.m - 60, true); }
+  };
+}
+
+/* ═════════ 10. 조작: 탭 · 길게 눌러 끌기 · 핀치 · 좌우 밀기 ═════════ */
+let press = null, drag = null, pinch = null, swipe = null, mdown = null, suppressClickUntil = 0;
+const yToMin = y => (y - grid.getBoundingClientRect().top) / S.set.hourH * 60;
+function cancelPress() { if (press && press.timer) clearTimeout(press.timer); press = null; }
+function beginDrag(el, y, isTouch) {
+  const b = dayBlocks.find(x => x.id === el.dataset.id);
+  if (!b) return;
+  const r = el.getBoundingClientRect(), tall = r.height >= 36;
+  const mode = tall && y - r.top < 11 ? 'top' : tall && r.bottom - y < 11 ? 'bot' : 'move';
+  drag = { b, el, mode, y0: y, scroll0: scroller.scrollTop, s0: b.s, e0: b.e, s: b.s, e: b.e, lastY: y, isTouch };
+  el.classList.add('lift'); $('#app').classList.add('dragging');
+  cancelPress();
+  try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) { }
+  requestAnimationFrame(autoScroll);
+}
+function moveDrag(y) {
+  if (!drag) return;
+  drag.lastY = y;
+  const dy = (y - drag.y0) + (scroller.scrollTop - drag.scroll0);
+  const dm = Math.round(dy / S.set.hourH * 60 / 5) * 5;
+  let s = drag.s0, e = drag.e0;
+  if (drag.mode === 'move') { const dur = e - s; s = clamp(s + dm, 0, 1440 - dur); e = s + dur; }
+  else if (drag.mode === 'top') s = clamp(s + dm, 0, e - 10);
+  else e = clamp(e + dm, s + 10, 1440);
+  if (s === drag.s && e === drag.e) return;
+  drag.s = s; drag.e = e;
+  drag.el.style.setProperty('--s', s); drag.el.style.setProperty('--d', e - s);
+  const tm = drag.el.querySelector('.tm span'); if (tm) tm.textContent = fmtRange(s, e);
+}
+function autoScroll() {
+  if (!drag) return;
+  const r = scroller.getBoundingClientRect(), y = drag.lastY;
+  let v = 0;
+  if (y < r.top + 46) v = -Math.ceil((r.top + 46 - y) / 5); else if (y > r.bottom - 46) v = Math.ceil((y - (r.bottom - 46)) / 5);
+  if (v) { const before = scroller.scrollTop; scroller.scrollTop += clamp(v, -14, 14); if (scroller.scrollTop !== before) moveDrag(y); }
+  requestAnimationFrame(autoScroll);
+}
+function endDrag(cancelled) {
+  const d = drag; if (!d) return;
+  drag = null;
+  d.el.classList.remove('lift'); $('#app').classList.remove('dragging');
+  suppressClickUntil = Date.now() + 450;
+  if (cancelled || (d.s === d.s0 && d.e === d.e0)) { renderGrid(); return; }
+  const ch = {}; if (d.s !== d.s0) ch.s = d.s; if (d.e !== d.e0) ch.e = d.e;
+  commitEdit(d.b, ch, d.mode === 'move' ? '옮길' : '바꿀');
+}
+function startPinch(e) {
+  const [a, b] = e.touches; const midY = (a.clientY + b.clientY) / 2;
+  pinch = { d0: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) || 1, H0: S.set.hourH, mMin: yToMin(midY), midY };
+}
+function movePinch(e) {
+  const [a, b] = e.touches;
+  const H = clamp(Math.round(pinch.H0 * Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) / pinch.d0), 36, 150);
+  if (H === S.set.hourH) return;
+  S.set.hourH = H; grid.style.setProperty('--H', H);
+  const gr = grid.getBoundingClientRect();
+  scroller.scrollTop += (gr.top + pinch.mMin / 60 * H) - pinch.midY;
+}
+function endPinch() { pinch = null; save(); renderGrid(); }
+
+grid.addEventListener('touchstart', e => {
+  if (e.touches.length === 2) { cancelPress(); swipe = null; if (!drag) startPinch(e); return; }
+  if (e.touches.length > 2) return;
+  const t = e.touches[0];
+  swipe = { x: t.clientX, y: t.clientY, t: Date.now() };
+  if (e.target.closest('.ck')) return;
+  const evEl = e.target.closest('.ev');
+  press = { x0: t.clientX, y0: t.clientY, evEl, timer: 0 };
+  press.timer = setTimeout(() => {
+    const p = press; if (!p) return;
+    if (p.evEl) beginDrag(p.evEl, p.y0, true);
+    else { press = null; suppressClickUntil = Date.now() + 600; newBlockAt(yToMin(p.y0)); }
+  }, evEl ? 380 : 550);
+}, { passive: true });
+grid.addEventListener('touchmove', e => {
+  if (pinch && e.touches.length === 2) { e.preventDefault(); movePinch(e); return; }
+  const t = e.touches[0]; if (!t) return;
+  if (drag) { e.preventDefault(); moveDrag(t.clientY); return; }
+  if (press && (Math.abs(t.clientX - press.x0) > 8 || Math.abs(t.clientY - press.y0) > 8)) cancelPress();
+}, { passive: false });
+grid.addEventListener('touchend', e => {
+  if (pinch) { if (e.touches.length < 2) endPinch(); swipe = null; return; }
+  if (drag) { endDrag(false); swipe = null; return; }
+  cancelPress();
+  const t = e.changedTouches[0];
+  if (swipe && t) {
+    const dx = t.clientX - swipe.x, dy = t.clientY - swipe.y;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.8 && Date.now() - swipe.t < 800) { suppressClickUntil = Date.now() + 400; go(addDays(sel, dx < 0 ? 1 : -1), dx < 0 ? 1 : -1); }
+  }
+  swipe = null;
+});
+grid.addEventListener('touchcancel', () => { cancelPress(); if (drag) endDrag(true); if (pinch) endPinch(); swipe = null; });
+document.addEventListener('gesturestart', e => { if (e.target && e.target.closest && e.target.closest('#scroller')) e.preventDefault(); });
+// 마우스 (Mac): 끌면 바로 옮기기, 더블클릭 = 새 블록
+grid.addEventListener('mousedown', e => {
+  if (e.button !== 0 || e.target.closest('.ck') || (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents)) return;
+  const evEl = e.target.closest('.ev');
+  if (evEl) { mdown = { x: e.clientX, y: e.clientY, evEl }; e.preventDefault(); }
+});
+window.addEventListener('mousemove', e => {
+  if (drag && !drag.isTouch) { moveDrag(e.clientY); return; }
+  if (mdown && (Math.abs(e.clientY - mdown.y) > 4 || Math.abs(e.clientX - mdown.x) > 4)) { const m = mdown; mdown = null; beginDrag(m.evEl, m.y, false); moveDrag(e.clientY); }
+});
+window.addEventListener('mouseup', () => { mdown = null; if (drag && !drag.isTouch) endDrag(false); });
+grid.addEventListener('dblclick', e => { if (!e.target.closest('.ev')) newBlockAt(yToMin(e.clientY)); });
+grid.addEventListener('click', e => {
+  if (Date.now() < suppressClickUntil) return;
+  const evEl = e.target.closest('.ev');
+  if (!evEl) return;
+  if (e.target.closest('.ck')) { toggleDone(evEl.dataset.id); return; }
+  openDetail(dayBlocks.find(b => b.id === evEl.dataset.id));
+});
+scroller.addEventListener('wheel', e => {
+  if (!e.ctrlKey) return;
+  e.preventDefault();
+  const H = clamp(Math.round(S.set.hourH * (e.deltaY < 0 ? 1.08 : 0.926)), 36, 150);
+  if (H === S.set.hourH) return;
+  const m = yToMin(e.clientY);
+  S.set.hourH = H; grid.style.setProperty('--H', H);
+  scroller.scrollTop += (grid.getBoundingClientRect().top + m / 60 * H) - e.clientY;
+  clearTimeout(scroller._wz); scroller._wz = setTimeout(() => { save(); renderGrid(); }, 250);
+}, { passive: false });
+// 주 띠: 날짜 누르기 · 좌우로 밀어 다른 주
+const weekEl = $('#week');
+weekEl.addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (b) go(b.dataset.d); });
+let wswipe = null;
+weekEl.addEventListener('touchstart', e => { const t = e.touches[0]; wswipe = { x: t.clientX, y: t.clientY }; }, { passive: true });
+weekEl.addEventListener('touchend', e => { const t = e.changedTouches[0]; if (wswipe && t) { const dx = t.clientX - wswipe.x; if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(t.clientY - wswipe.y) * 1.5) go(addDays(sel, dx < 0 ? 7 : -7), dx < 0 ? 1 : -1); } wswipe = null; });
+$('#allday').addEventListener('click', e => { const b = e.target.closest('[data-adt]'); if (b) toast(b.dataset.adt); });
+$('#btnMonth').onclick = openMonth;
+$('#btnSearch').onclick = openSearch;
+$('#btnGuide').onclick = () => openGuide();
+$('#btnAdd').onclick = () => newBlockAt(sel === today ? nowF() + 15 : 9 * 60);
+$('#btnToday').onclick = () => { if (sel !== today) go(today); scrollToNow(true); };
+$('#btnCals').onclick = openCals;
+$('#btnInbox').onclick = openInbox;
+$('#nowCard').onclick = () => { if (sel !== today) { go(today); scrollToNow(true); return; } const { cur } = curAndNext(); scrollToNow(true); if (cur) openDetail(cur); };
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-say],[data-copy],[data-guide],[data-inbox],[data-x]');
+  if (!t) return;
+  if (t.hasAttribute('data-say')) speak(t.dataset.say);
+  else if (t.hasAttribute('data-copy')) copyText(t.dataset.copy);
+  else if (t.hasAttribute('data-guide')) openGuide(t.dataset.guide);
+  else if (t.hasAttribute('data-inbox')) openInbox();
+  else if (t.hasAttribute('data-x')) closeSheet();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if ($('.as-wrap')) return; if ($('.full-ov')) closeOverlay(); else closeSheet(); return; }
+  if (layer.classList.contains('open') || $('.full-ov') || /INPUT|TEXTAREA|SELECT/.test((e.target && e.target.tagName) || '')) return;
+  if (e.key === 'ArrowLeft') go(addDays(sel, -1), -1);
+  else if (e.key === 'ArrowRight') go(addDays(sel, 1), 1);
+  else if (e.key === 't' || e.key === 'T') { go(today); scrollToNow(true); }
+  else if (e.key === 'n' || e.key === 'N') $('#btnAdd').click();
+});
+
+/* ═════════ 11. 시간 흐름 ═════════ */
+let lastMin = -1;
+function tick(force) {
+  const d = new Date(), ds = ymd(d), m = d.getHours() * 60 + d.getMinutes();
+  if (ds !== today) { const wasToday = sel === today; today = ds; if (wasToday) sel = ds; renderAll(); if (wasToday) scrollToNow(false); lastMin = m; return; }
+  if (force || m !== lastMin) { lastMin = m; if (!drag) updateNow(); }
+}
+setInterval(tick, 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(true); });
+window.addEventListener('hashchange', () => { const h = decodeURIComponent(location.hash.slice(1)); if (/^\d{4}-\d{2}-\d{2}$/.test(h) && h !== sel) { go(h); scrollToMin(7 * 60); } });
+window.addEventListener('focus', () => tick(true));
+
+/* ═════════ 12. 시작 ═════════ */
+(function start() {
+  const hsh = decodeURIComponent(location.hash.slice(1));
+  if (/^\d{4}-\d{2}-\d{2}$/.test(hsh)) sel = hsh;
+  applyTheme();
+  renderAll();
+  if (sel === today) scrollToNow(false); else scrollToMin(7 * 60);
+  if (!S.seenHelp) {
+    const hint = document.createElement('div');
+    hint.className = 'hint';
+    hint.innerHTML = '<b>사용법</b><br>○ 동그라미 = 완료 (가로줄) · 블록 누르기 = 단계와 남은 시간<br>길게 눌러 끌기 = 시간 옮기기 · 위·아래 가장자리 = 길이<br>빈 곳 길게 누르기 = 새 블록 · 좌우로 밀기 = 다른 날<br><button>알겠어요</button>';
+    scroller.appendChild(hint);
+    hint.style.top = (scroller.scrollTop + 8) + 'px';
+    hint.querySelector('button').onclick = () => { S.seenHelp = true; save(); hint.remove(); };
+  }
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });
+})();
+</script>
+</body>
+</html>
